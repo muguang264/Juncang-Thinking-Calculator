@@ -7,12 +7,19 @@
 <meta name="description" content="《明日方舟》集成战略「沉沦者的黑流树海」自然物增值收益推演计算工具">
 <title>军藏思维计算仪 · 黑流树海</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0d0a'/%3E%3Cpath d='M16 3 27 16 16 29 5 16Z' fill='%238b1a1a'/%3E%3Cpath d='M16 10 21 16 16 22 11 16Z' fill='%23d4a017'/%3E%3C/svg%3E">
+<!-- PWA：可安装 + 离线 -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="军藏计算仪">
 <link rel="preconnect" href="https://miaoda.feishu.cn">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
 <!-- Supabase 客户端（用于均藏对局收录的跨设备同步） -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
 <!-- Chart.js（对局收藏品数量折线图） -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 /* ============================================================
    设计变量 —— 修改此处可调整配色与字号
@@ -738,6 +745,34 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 }
 
 /* ============================================================
+   PWA 安装按钮（悬浮于右下角，可安装时出现）
+   ============================================================ */
+.install-fab {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  background: var(--accent);
+  color: #f4ead6;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s, filter 0.15s;
+}
+.install-fab:hover { filter: brightness(1.12); }
+.install-fab:active { transform: scale(0.96); }
+.install-fab[hidden] { display: none; }
+.install-fab svg { display: block; }
+
+/* ============================================================
    响应式断点
    ============================================================ */
 @media (min-width: 768px) {
@@ -833,6 +868,15 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
     </div>
   </div>
 </header>
+
+<!-- ==================== PWA 安装按钮（可安装时显示） ==================== -->
+<button type="button" class="install-fab" id="installBtn" hidden aria-label="安装到主屏幕">
+  <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+    <path d="M12 3v11m0 0l-4-4m4 4l4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+  </svg>
+  <span>安装到主屏幕</span>
+</button>
 
 <!-- ==================== 树海氛围光点 ==================== -->
 <div class="particles" aria-hidden="true">
@@ -1765,6 +1809,60 @@ async function initAuth() {
       loadRecords();
       renderRecords();
     }
+  });
+}
+
+/* ============================================================
+   PWA：Service Worker 注册 + 「安装到主屏幕」按钮
+   ============================================================ */
+let deferredPrompt = null;
+const installBtn = document.getElementById('installBtn');
+const isStandalone =
+  window.matchMedia('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+function showInstallBtn() {
+  if (installBtn && !isStandalone) installBtn.hidden = false;
+}
+
+/* Android / 桌面 Chrome、Edge：浏览器提供原生安装事件 */
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallBtn();
+});
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  if (installBtn) installBtn.hidden = true;
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch (e) { /* 忽略 */ }
+      deferredPrompt = null;
+      installBtn.hidden = true;
+    } else {
+      /* iOS Safari 不支持自动安装，给出手动指引 */
+      alert(
+        '安装方法：\n\n' +
+        '· iPhone / iPad（Safari）：点击底部「分享」图标 → 选择「添加到主屏幕」→ 添加。\n\n' +
+        '· Android（Chrome / Edge）：点右上角菜单「⋮」→「安装应用」或「添加到主屏幕」。\n\n' +
+        '· 电脑（Chrome / Edge）：点地址栏右侧的安装图标，或菜单里的「安装」。'
+      );
+    }
+  });
+}
+
+/* iOS 不触发 beforeinstallprompt，主动显示按钮提供指引 */
+if (!isStandalone && isIOS) showInstallBtn();
+
+/* 注册 Service Worker（离线缓存） */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
   });
 }
 
