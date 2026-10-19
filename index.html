@@ -7,7 +7,6 @@
 <meta name="description" content="《明日方舟》集成战略「沉沦者的黑流树海」自然物增值收益推演计算工具">
 <title>军藏思维计算仪 · 黑流树海</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0d0a'/%3E%3Cpath d='M16 3 27 16 16 29 5 16Z' fill='%238b1a1a'/%3E%3Cpath d='M16 10 21 16 16 22 11 16Z' fill='%23d4a017'/%3E%3C/svg%3E">
-<!-- PWA：可安装 + 离线 -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,17 +15,10 @@
 <meta name="apple-mobile-web-app-title" content="军藏计算仪">
 <link rel="preconnect" href="https://miaoda.feishu.cn">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
-<!-- Supabase 客户端（用于均藏对局收录的跨设备同步） -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
-<!-- Chart.js（对局收藏品数量折线图） -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
-/* ============================================================
-   设计变量 —— 修改此处可调整配色与字号
-   （字号已按“手机端一页查看”目标压缩；≥1024px 时 +1px）
-   ============================================================ */
 :root {
-  /* 配色 */
   --bg: #0a0d0a;
   --panel: #121812;
   --border: #1a2a1a;
@@ -39,31 +31,27 @@
   --bar-track-bg: #0f150f;
   --row-hover: #161e16;
   --bar-fill: #2a3a2a;
+  --green-fixed: #5cb85c;
 
-  /* 移动端字号（≥1024px 时整体 +1px，见下方媒体查询） */
-  --fs-title: 20px;      /* 页面标题 */
-  --fs-sub: 10px;        /* 副标题 */
-  --fs-section: 13px;    /* 区块标题 */
-  --fs-mat-name: 13px;   /* 自然物名称 */
-  --fs-mat-desc: 10px;   /* 自然物说明 */
-  --fs-input: 16px;      /* 输入框数字（≥16px 防止 iOS 聚焦缩放） */
-  --fs-op-name: 12px;    /* 柱状图作战名 */
-  --fs-op-value: 15px;   /* 柱状图数值 */
-  --fs-equiv: 10px;      /* 等效收藏品 */
-  --fs-shop-label: 12px; /* 商店净增值标签 */
-  --fs-shop-value: 15px; /* 商店净增值数值 */
+  --fs-title: 20px;
+  --fs-sub: 10px;
+  --fs-section: 13px;
+  --fs-mat-name: 13px;
+  --fs-mat-desc: 10px;
+  --fs-input: 16px;
+  --fs-op-name: 12px;
+  --fs-op-value: 15px;
+  --fs-equiv: 10px;
+  --fs-shop-label: 12px;
+  --fs-shop-value: 15px;
 
-  /* 方舟风斜切角：右上、左下各切 8px */
   --bevel: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { -webkit-text-size-adjust: 100%; }
-
 body {
   min-height: 100vh;
-  /* 潮湿暗黑树海的微弱氛围光 */
   background:
     radial-gradient(900px 520px at 50% -120px, rgba(139, 26, 26, 0.10), transparent 70%),
     radial-gradient(720px 420px at 108% 104%, rgba(26, 58, 26, 0.10), transparent 70%),
@@ -74,432 +62,108 @@ body {
   -webkit-tap-highlight-color: transparent;
   padding-bottom: 24px;
 }
-
 ::selection { background: rgba(139, 26, 26, 0.45); }
 
-/* ============================================================
-   顶部标题区（压缩高度）
-   ============================================================ */
-.app-header {
-  border-bottom: 1px solid var(--border);
-  background: rgba(18, 24, 18, 0.6);
-}
+.app-header { border-bottom: 1px solid var(--border); background: rgba(18, 24, 18, 0.6); }
 .header-inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;          /* 窄屏时结局藏品行自动换到标题下方 */
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 16px 9px;
+  max-width: 1120px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; padding: 12px 16px 9px;
 }
-/* 标题左侧短竖线（方舟章节标题式） */
-.title-bar {
-  width: 3px;
-  height: 16px;
-  background: var(--accent);
-  margin-top: 4px;
-  flex-shrink: 0;
-}
+.title-bar { width: 3px; height: 16px; background: var(--accent); margin-top: 4px; flex-shrink: 0; }
 .app-title {
-  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
-  font-size: var(--fs-title);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  line-height: 1.25;
-  color: var(--text);
-  text-shadow: 0 0 12px rgba(139, 26, 26, 0.4);
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif; font-size: var(--fs-title); font-weight: 700; letter-spacing: 0.05em; line-height: 1.25; color: var(--text); text-shadow: 0 0 12px rgba(139, 26, 26, 0.4);
 }
-.app-sub {
-  font-size: var(--fs-sub);
-  color: var(--text-dim);
-  letter-spacing: 0.08em;
-  margin-top: 1px;
-}
+.app-sub { font-size: var(--fs-sub); color: var(--text-dim); letter-spacing: 0.08em; margin-top: 1px; }
 
-/* ---- 结局藏品勾选框（自定义样式，暗金主题） ---- */
-.ending-box {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-top: 2px;
-}
-.ending-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;            /* 略增大，深色背景下更清晰 */
-  color: var(--text-dim);
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-}
-/* 三色标签文字：土黄 / 蓝灰（藏青提亮）/ 银白 */
+.ending-box { margin-left: auto; display: flex; align-items: center; gap: 12px; padding-top: 2px; }
+.ending-label { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-dim); cursor: pointer; user-select: none; -webkit-user-select: none; }
 .ending-label.lb-a span { color: #D0A741; }
 .ending-label.lb-b span { color: #5B8DB8; }
 .ending-label.lb-c span { color: #C8D0CA; }
-/* 勾选框最右侧的圆形刷新按钮（仅重置自然物数量，保留勾选状态） */
 .ending-reset {
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  width: 22px; height: 22px; padding: 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: transparent; border: 1px solid var(--border-light); color: var(--text-dim); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 .ending-reset:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
 .ending-reset:active { border-color: var(--accent); background: #233523; }
 .ending-check {
-  position: relative;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  border: 1px solid var(--border-light);
-  border-radius: 4px;
-  background: var(--bar-track-bg);
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  position: relative; width: 16px; height: 16px; flex-shrink: 0; appearance: none; -webkit-appearance: none; border: 1px solid var(--border-light); border-radius: 4px; background: var(--bar-track-bg); cursor: pointer; transition: border-color 0.15s, background 0.15s;
 }
 .ending-check:hover { border-color: var(--gold-bright); }
-.ending-check:checked {
-  border-color: var(--gold-bright);
-  background: rgba(212, 160, 23, 0.14);
-}
-/* 暗金色对勾 */
+.ending-check:checked { border-color: var(--gold-bright); background: rgba(212, 160, 23, 0.14); }
 .ending-check::before {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 6px;
-  height: 10px;
-  border-right: 2px solid var(--gold-bright);
-  border-bottom: 2px solid var(--gold-bright);
-  transform: rotate(45deg);
-  opacity: 0;
-  transition: opacity 0.15s;
+  content: ""; position: absolute; left: 4px; top: 1px; width: 6px; height: 10px; border-right: 2px solid var(--gold-bright); border-bottom: 2px solid var(--gold-bright); transform: rotate(45deg); opacity: 0; transition: opacity 0.15s;
 }
 .ending-check:checked::before { opacity: 1; }
-.ending-check:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 2px;
-}
 
-/* ============================================================
-   主布局：默认单列；≥768px 左输入右排序
-   ============================================================ */
-.app-main {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 10px 12px 0;
-  display: grid;
-  gap: 10px;
-  align-items: start;
-}
-
-/* ============================================================
-   面板：方舟风斜切角 + 1px 细边框（双层伪元素实现描边贴合斜角）
-   ============================================================ */
-.panel {
-  position: relative;
-  background: var(--panel);
-  clip-path: var(--bevel);
-  padding: 12px;
-}
-.panel::before,
-.panel::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-}
-.panel::before {
-  inset: 0;
-  background: var(--border);
-  clip-path: var(--bevel);
-  z-index: -1;
-}
-.panel::after {
-  inset: 1px;
-  background: var(--panel);
-  clip-path: var(--bevel);
-  z-index: -1;
-}
-
-/* 区块标题：衬线体 + 左侧短竖线 */
+.app-main { max-width: 1120px; margin: 0 auto; padding: 10px 12px 0; display: grid; gap: 10px; align-items: start; }
+.panel { position: relative; background: var(--panel); clip-path: var(--bevel); padding: 12px; }
+.panel::before, .panel::after { content: ""; position: absolute; pointer-events: none; }
+.panel::before { inset: 0; background: var(--border); clip-path: var(--bevel); z-index: -1; }
+.panel::after { inset: 1px; background: var(--panel); clip-path: var(--bevel); z-index: -1; }
 .section-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
-  font-size: var(--fs-section);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--text-dim);
-  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px; font-family: "Noto Serif SC", "Songti SC", "SimSun", serif; font-size: var(--fs-section); font-weight: 600; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 8px;
 }
-.section-title::before {
-  content: "";
-  width: 3px;
-  height: 16px;
-  background: var(--accent);
-  flex-shrink: 0;
-}
+.section-title::before { content: ""; width: 3px; height: 16px; background: var(--accent); flex-shrink: 0; }
 
-/* ============================================================
-   自然物库存输入区
-   ============================================================ */
 .mat-list { display: flex; flex-direction: column; }
 .mat-list > * + * { border-top: 1px solid var(--border); }
-
-.mat-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 2px;
-}
-
-/* emoji 图标底 */
-.mat-icon {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--border);
-  border-radius: 4px;
-  font-size: 16px;
-}
-
+.mat-row { display: flex; align-items: center; gap: 8px; padding: 6px 2px; }
+.mat-icon { width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--border); border-radius: 4px; font-size: 16px; }
 .mat-info { flex: 1 1 auto; min-width: 0; }
 .mat-name { font-size: var(--fs-mat-name); color: var(--text); }
-.mat-desc {
-  font-size: var(--fs-mat-desc);
-  color: var(--text-dim);
-  margin-top: 1px;
-}
+.mat-desc { font-size: var(--fs-mat-desc); color: var(--text-dim); margin-top: 1px; }
 
-/* ---- 数量调整区 ---- */
-.qty-control {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-/* 按钮：视觉 26×26，触控区 38×38，图标用内联 SVG */
+.qty-control { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .qty-btn {
-  position: relative;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--text);
-  font-family: inherit;
-  line-height: 1;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
+  position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; color: var(--text); font-family: inherit; line-height: 1; touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
-.qty-btn::before {
-  content: "";
-  position: absolute;
-  z-index: -1;           /* 放在图标之下，避免遮挡 */
-  width: 26px;
-  height: 26px;
-  background: var(--border);
-  border: 1px solid var(--border-light);
-  transition: border-color 0.15s, background 0.15s;
-}
+.qty-btn::before { content: ""; position: absolute; z-index: -1; width: 26px; height: 26px; background: var(--border); border: 1px solid var(--border-light); transition: border-color 0.15s, background 0.15s; }
 .qty-btn svg { position: relative; display: block; }
 .qty-btn:hover { color: #e4eee4; }
 .qty-btn:hover::before { border-color: var(--accent); background: #1f2f1f; }
 .qty-btn:active::before { border-color: var(--accent); background: #233523; }
 
-/* 数字输入框：透明底 + 下边框 */
 .qty-input {
-  width: 52px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border-light);
-  color: #ffffff;
-  font-size: var(--fs-input);
-  text-align: center;
-  padding: 3px 0 4px;
-  font-family: inherit;
-  transition: border-color 0.15s;
-  -moz-appearance: textfield;
-  appearance: textfield;
+  width: 52px; background: transparent; border: none; border-bottom: 1px solid var(--border-light); color: #ffffff; font-size: var(--fs-input); text-align: center; padding: 3px 0 4px; font-family: inherit; transition: border-color 0.15s; -moz-appearance: textfield; appearance: textfield;
 }
-.qty-input::-webkit-outer-spin-button,
-.qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .qty-input:focus { outline: none; border-bottom-color: var(--accent); }
 
-/* ---- 商店招募券净增值行（跟随回声玉米） ---- */
-.shop-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 2px;
-}
-.shop-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  font-size: var(--fs-shop-label);
-  color: var(--text);
-}
-/* 数据标签：小型菱形装饰 */
-.shop-label::before {
-  content: "";
-  width: 5px;
-  height: 5px;
-  flex-shrink: 0;
-  background: var(--accent);
-  transform: rotate(45deg);
-}
-.shop-value {
-  font-size: var(--fs-shop-value);
-  font-weight: 600;
-  color: var(--gold);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
+.shop-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 2px; }
+.shop-label { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-shop-label); color: var(--text); }
+.shop-label::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; background: var(--accent); transform: rotate(45deg); }
+.shop-value { font-size: var(--fs-shop-value); font-weight: 600; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
 .shop-value.neg { color: var(--accent); }
 
-/* ---- 重置按钮 ---- */
-.mat-actions {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
-}
+.mat-actions { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
 .reset-btn {
-  width: 100%;
-  padding: 8px 0;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  color: var(--text-dim);
-  font-size: var(--fs-shop-label);
-  font-family: inherit;
-  letter-spacing: 0.12em;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  width: 100%; padding: 8px 0; background: transparent; border: 1px solid var(--border-light); color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; letter-spacing: 0.12em; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 .reset-btn:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
 .reset-btn:active { border-color: var(--accent); background: #233523; }
 
-/* ============================================================
-   作战增值排序区（横向柱状图，按增值从大到小实时排序）
-   ============================================================ */
 .rank-list { display: flex; flex-direction: column; }
-
-.bar-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: 6px;
-  row-gap: 1px;
-  padding: 3px 6px;            /* 紧凑垂直留白，保证移动端一页 */
-  transition: background 0.2s;
-}
+.bar-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 1px; padding: 3px 6px; transition: background 0.2s; }
 .bar-row + .bar-row { border-top: 1px solid var(--border); }
 .bar-row:hover { background: var(--row-hover); }
-
-.bar-name {
-  width: 64px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;       /* 名称与 😍 水平居中 */
-  justify-content: center;
-  gap: 1px;
-  font-size: var(--fs-op-name);
-  color: var(--text);
-}
-/* 第一名作战名称下方的 😍 标记 */
-.best-emoji {
-  display: none;
-  font-size: 11px;
-  line-height: 1;
-}
+.bar-name { width: 64px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: var(--fs-op-name); color: var(--text); }
+.best-emoji { display: none; font-size: 11px; line-height: 1; }
 .bar-row.best .best-emoji { display: block; }
-.bar-track {
-  flex: 1 1 60px;
-  min-width: 0;
-  height: 20px;
-  background: var(--bar-track-bg);
-  clip-path: var(--bevel);
-}
-.bar-fill {
-  height: 100%;
-  background: var(--bar-fill);
-  clip-path: var(--bevel);
-  transition: width 300ms ease-out;
-}
+.bar-track { flex: 1 1 60px; min-width: 0; height: 20px; background: var(--bar-track-bg); clip-path: var(--bevel); }
+.bar-fill { height: 100%; background: var(--bar-fill); clip-path: var(--bevel); transition: width 300ms ease-out; }
 .bar-row.best .bar-fill { background: var(--accent); }
-/* 最高价值节点：名字改为金色 */
 .bar-row.best .bar-name { color: var(--gold-bright); }
+.bar-value { width: 40px; flex-shrink: 0; text-align: right; font-size: var(--fs-op-value); font-weight: 600; color: var(--gold); }
+.bar-mark { width: 12px; flex-shrink: 0; color: var(--accent); }
+.best-mark { display: inline-block; animation: blink 2s ease-in-out infinite; }
+.bar-meta { width: 100%; text-align: right; font-size: var(--fs-equiv); color: var(--text-dim); }
 
-.bar-value {
-  width: 40px;
-  flex-shrink: 0;
-  text-align: right;
-  font-size: var(--fs-op-value);
-  font-weight: 600;
-  color: var(--gold);
-}
-.bar-mark {
-  width: 12px;
-  flex-shrink: 0;
-  color: var(--accent);
-}
-/* 第一名 ▶ 闪烁 */
-.best-mark {
-  display: inline-block;
-  animation: blink 2s ease-in-out infinite;
-}
-.bar-meta {
-  width: 100%;
-  text-align: right;
-  font-size: var(--fs-equiv);
-  color: var(--text-dim);
-}
-
-/* ============================================================
-   树海氛围光点（半透明绿色，缓慢上下漂浮，不抢内容）
-   ============================================================ */
-.particles {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-.particle {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(150, 205, 160, 0.55), rgba(90, 150, 100, 0.15));
-  animation: floaty 8s ease-in-out infinite;
-}
-.p1 { left: 8%;  top: 16%; width: 4px; height: 4px; animation-duration: 7.5s; animation-delay: -1s; }
-.p2 { left: 92%; top: 24%; width: 3px; height: 3px; animation-duration: 9s;  animation-delay: -4s; }
-.p3 { left: 13%; top: 70%; width: 5px; height: 5px; animation-duration: 8s;  animation-delay: -2.5s; }
+.particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+.particle { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(150, 205, 160, 0.55), rgba(90, 150, 100, 0.15)); animation: floaty 8s ease-in-out infinite; }
+.p1 { left: 8%; top: 16%; width: 4px; height: 4px; animation-duration: 7.5s; animation-delay: -1s; }
+.p2 { left: 92%; top: 24%; width: 3px; height: 3px; animation-duration: 9s; animation-delay: -4s; }
+.p3 { left: 13%; top: 70%; width: 5px; height: 5px; animation-duration: 8s; animation-delay: -2.5s; }
 .p4 { left: 89%; top: 66%; width: 3px; height: 3px; animation-duration: 10s; animation-delay: -6s; }
-.p5 { left: 50%; top: 90%; width: 4px; height: 4px; animation-duration: 7s;  animation-delay: -3s; }
+.p5 { left: 50%; top: 90%; width: 4px; height: 4px; animation-duration: 7s; animation-delay: -3s; }
 .p6 { left: 28%; top: 40%; width: 3px; height: 3px; animation-duration: 9.5s; animation-delay: -5s; }
 
 @keyframes floaty {
@@ -508,335 +172,105 @@ body {
   50%      { transform: translate(5px, -28px); opacity: 0.5; }
   70%      { opacity: 0.28; }
 }
-
-/* ============================================================
-   动效：数字脉动、▶ 闪烁、柱状图首次生长
-   ============================================================ */
 .pulse { animation: numpulse 0.32s ease-out; }
-@keyframes numpulse {
-  0%   { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-@keyframes blink {
-  0%, 100% { opacity: 0.6; }
-  50%      { opacity: 1; }
-}
-
-/* 页面加载时柱状图从左侧生长（400ms） */
+@keyframes numpulse { 0% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes blink { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 body.loading .bar-fill { transition: width 400ms ease-out; }
 
-/* ============================================================
-   均藏对局收录模块（圆角卡片，默认收起，可平滑展开）
-   ============================================================ */
-.records-panel {
-  max-width: 1120px;
-  margin: 10px auto 0;
-  padding: 0 12px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-.records-head {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-}
-.records-title {
-  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
-  font-size: var(--fs-section);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--gold-bright);   /* 暗金色标题 */
-  text-shadow: 0 0 12px rgba(139, 26, 26, 0.3);
-}
-.records-avg {
-  margin-left: auto;
-  font-size: var(--fs-equiv);
-  color: var(--text-dim);
-  white-space: nowrap;
-}
-/* 均藏数量：等宽字体加粗，暗金色突出 */
-.records-avg b {
-  font-family: "SF Mono", Consolas, "Liberation Mono", monospace;
-  font-weight: 700;
-  font-size: var(--fs-op-value);
-  color: var(--gold-bright);
-}
-.records-arrow {
-  flex-shrink: 0;
-  color: var(--text-dim);
-  font-size: 12px;
-  line-height: 1;
-  transition: transform 0.3s ease;
-}
+.records-panel { max-width: 1120px; margin: 10px auto 0; padding: 0 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+.records-head { width: 100%; display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: transparent; border: none; cursor: pointer; text-align: left; }
+.records-title { font-family: "Noto Serif SC", "Songti SC", "SimSun", serif; font-size: var(--fs-section); font-weight: 600; letter-spacing: 0.05em; color: var(--gold-bright); text-shadow: 0 0 12px rgba(139, 26, 26, 0.3); }
+.records-avg { margin-left: auto; font-size: var(--fs-equiv); color: var(--text-dim); white-space: nowrap; }
+.records-avg b { font-family: "SF Mono", Consolas, "Liberation Mono", monospace; font-weight: 700; font-size: var(--fs-op-value); color: var(--gold-bright); }
+.records-arrow { flex-shrink: 0; color: var(--text-dim); font-size: 12px; line-height: 1; transition: transform 0.3s ease; }
 .records-panel.open .records-arrow { transform: rotate(90deg); }
-
-.records-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s ease;
-}
+.records-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
 
 .records-list { display: flex; flex-direction: column; }
-.record-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-}
+.record-row { display: flex; align-items: center; gap: 8px; padding: 6px 12px; }
 .record-row + .record-row { border-top: 1px solid var(--border); }
-.record-desc {
-  flex: 3 1 0;               /* 说明输入框：约 60% 宽 */
-  min-width: 0;
-  background: var(--bar-track-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text);
-  font-size: var(--fs-op-name);
-  font-family: inherit;
-  padding: 6px 8px;
-}
-.record-num {
-  flex: 2 1 0;               /* 数量输入框：约 40% 宽 */
-  min-width: 0;
-  background: var(--bar-track-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--gold-bright);
-  font-size: var(--fs-op-name);
-  font-family: "SF Mono", Consolas, "Liberation Mono", monospace;
-  text-align: center;
-  padding: 6px 4px;
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-.record-num::-webkit-outer-spin-button,
-.record-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.record-desc { flex: 3 1 0; min-width: 0; background: var(--bar-track-bg); border: 1px solid var(--border-light); border-radius: 6px; color: var(--text); font-size: var(--fs-op-name); font-family: inherit; padding: 6px 8px; }
+.record-num { flex: 2 1 0; min-width: 0; background: var(--bar-track-bg); border: 1px solid var(--border-light); border-radius: 6px; color: var(--gold-bright); font-size: var(--fs-op-name); font-family: "SF Mono", Consolas, "Liberation Mono", monospace; text-align: center; padding: 6px 4px; -moz-appearance: textfield; appearance: textfield; }
+.record-num::-webkit-outer-spin-button, .record-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .record-desc:focus, .record-num:focus { outline: none; border-color: var(--accent); }
-.record-del {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text-dim);
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
+.record-del { flex-shrink: 0; width: 28px; height: 28px; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: 15px; line-height: 1; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
 .record-del:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
-
-.records-empty {
-  display: none;
-  padding: 12px;
-  font-size: var(--fs-equiv);
-  color: var(--text-dim);
-  text-align: center;
-}
+.records-empty { display: none; padding: 12px; font-size: var(--fs-equiv); color: var(--text-dim); text-align: center; }
 .records-empty.show { display: block; }
-
-.records-actions {
-  display: flex;
-  gap: 8px;
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--border);
-}
-.records-add {
-  flex: 1;
-  padding: 7px 0;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text);
-  font-size: var(--fs-shop-label);
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-}
+.records-actions { display: flex; gap: 8px; padding: 8px 12px 12px; border-top: 1px solid var(--border); }
+.records-add { flex: 1; padding: 7px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text); font-size: var(--fs-shop-label); font-family: inherit; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s; }
 .records-add:hover { border-color: var(--accent); background: #1f2f1f; }
-.records-clear {
-  padding: 7px 12px;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text-dim);
-  font-size: var(--fs-shop-label);
-  font-family: inherit;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
+.records-clear { padding: 7px 12px; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; white-space: nowrap; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
 .records-clear:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
 
-/* ---- 登录 / 注册框（模块展开后的顶部区域） ---- */
-.auth-box {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
-  background: rgba(15, 21, 15, 0.6);
-}
-.auth-input {
-  flex: 1 1 110px;
-  min-width: 0;
-  background: var(--bar-track-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text);
-  font-size: var(--fs-op-name);
-  font-family: inherit;
-  padding: 6px 8px;
-}
+.auth-box { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--border); background: rgba(15, 21, 15, 0.6); }
+.auth-input { flex: 1 1 110px; min-width: 0; background: var(--bar-track-bg); border: 1px solid var(--border-light); border-radius: 6px; color: var(--text); font-size: var(--fs-op-name); font-family: inherit; padding: 6px 8px; }
 .auth-input:focus { outline: none; border-color: var(--accent); }
-.auth-btn {
-  padding: 6px 12px;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text-dim);
-  font-size: var(--fs-op-name);
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
+.auth-btn { padding: 6px 12px; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: var(--fs-op-name); font-family: inherit; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
 .auth-btn:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
-.auth-user {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--fs-op-name);
-  color: var(--gold-bright);
-}
-.auth-status {
-  flex: 1 1 100%;
-  font-size: var(--fs-equiv);
-  color: var(--text-dim);
-}
+.auth-user { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-op-name); color: var(--gold-bright); }
+.auth-status { flex: 1 1 100%; font-size: var(--fs-equiv); color: var(--text-dim); }
 .auth-status.err { color: var(--accent); }
 .auth-status.ok { color: var(--gold-bright); }
 
-/* ---- 对局收藏品数量折线图 ---- */
-.chart-wrap {
-  position: relative;
-  height: 170px;
-  padding: 10px 12px 12px;
-  border-top: 1px solid var(--border);
-}
-.chart-empty {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--fs-equiv);
-  color: var(--text-dim);
-}
+.chart-wrap { position: relative; height: 170px; padding: 10px 12px 12px; border-top: 1px solid var(--border); }
+.chart-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: var(--fs-equiv); color: var(--text-dim); }
 
-/* ============================================================
-   PWA 安装按钮（悬浮于右下角，可安装时出现）
-   ============================================================ */
-.install-fab {
-  position: fixed;
-  right: 14px;
-  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  z-index: 50;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 14px;
-  background: var(--accent);
-  color: #f4ead6;
-  border: 1px solid var(--gold);
-  border-radius: 999px;
-  font-family: inherit;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-  transition: transform 0.15s, filter 0.15s;
-}
+.enc-inner { padding: 10px 12px 12px; }
+.enc-floors { display: flex; gap: 4px; margin-bottom: 10px; }
+.enc-floor-btn { flex: 1 1 0; min-width: 0; padding: 6px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: 11px; font-family: inherit; white-space: nowrap; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.enc-floor-btn:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
+.enc-floor-btn.active { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212, 160, 23, 0.12); }
+
+.enc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.enc-item { display: flex; align-items: flex-start; gap: 4px; min-width: 0; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.enc-check { position: relative; width: 14px; height: 14px; margin-top: 1px; flex-shrink: 0; appearance: none; -webkit-appearance: none; border: 1px solid var(--border-light); border-radius: 3px; background: var(--bar-track-bg); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.enc-check:hover { border-color: var(--gold-bright); }
+.enc-check:checked { border-color: var(--gold-bright); background: rgba(212, 160, 23, 0.14); }
+.enc-check::before { content: ""; position: absolute; left: 3px; top: 0; width: 5px; height: 9px; border-right: 1.8px solid var(--gold-bright); border-bottom: 1.8px solid var(--gold-bright); transform: rotate(45deg); opacity: 0; transition: opacity 0.15s; }
+.enc-check:checked::before { opacity: 1; }
+
+.enc-name { min-width: 0; font-size: 11px; line-height: 1.25; color: var(--text); word-break: break-all; transition: color 0.15s; }
+
+/* 当前层数可出现的事件：名称改为金色 */
+.enc-item.available .enc-name { color: var(--gold-bright); }
+/* 被勾选的事件名称变为红色（优先于金色） */
+.enc-item.checked .enc-name { color: var(--accent) !important; }
+/* 货从口出固定为绿色（最高优先级） */
+.enc-item[data-name="货从口出（马头）"] .enc-name { color: var(--green-fixed) !important; }
+
+.enc-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.enc-reset { flex: 1; padding: 7px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; letter-spacing: 0.08em; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s; }
+.enc-reset:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
+.enc-reset:active { border-color: var(--accent); background: #233523; }
+
+.install-fab { position: fixed; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; background: var(--accent); color: #f4ead6; border: 1px solid var(--gold); border-radius: 999px; font-family: inherit; font-size: 13px; letter-spacing: 0.06em; cursor: pointer; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); transition: transform 0.15s, filter 0.15s; }
 .install-fab:hover { filter: brightness(1.12); }
 .install-fab:active { transform: scale(0.96); }
 .install-fab[hidden] { display: none; }
 .install-fab svg { display: block; }
 
-/* ============================================================
-   响应式断点
-   ============================================================ */
-@media (min-width: 768px) {
-  .app-main { grid-template-columns: 300px 1fr; }   /* 输入区固定 300px 左栏 */
-}
+@media (min-width: 768px) { .app-main { grid-template-columns: 300px 1fr; } }
 @media (min-width: 1024px) {
   :root {
-    /* 宽屏字号整体 +1px */
-    --fs-title: 21px;
-    --fs-sub: 11px;
-    --fs-section: 14px;
-    --fs-mat-name: 14px;
-    --fs-mat-desc: 11px;
-    --fs-input: 17px;
-    --fs-op-name: 13px;
-    --fs-op-value: 16px;
-    --fs-equiv: 11px;
-    --fs-shop-label: 13px;
-    --fs-shop-value: 16px;
+    --fs-title: 21px; --fs-sub: 11px; --fs-section: 14px; --fs-mat-name: 14px; --fs-mat-desc: 11px; --fs-input: 17px; --fs-op-name: 13px; --fs-op-value: 16px; --fs-equiv: 11px; --fs-shop-label: 13px; --fs-shop-value: 16px;
   }
-  .app-main { grid-template-columns: 340px 1fr; }   /* 左栏加宽至 340px */
+  .app-main { grid-template-columns: 340px 1fr; }
 }
-
-/* 移动端：结局藏品勾选框放大（字号 14px、选框 20px），换行后右对齐并加大点按间距 */
 @media (max-width: 767px) {
-  .ending-box {
-    width: 100%;
-    justify-content: flex-end;
-    gap: 14px;
-    padding-top: 4px;
-  }
-  .ending-label {
-    font-size: 14px;
-    gap: 6px;
-    min-height: 28px;
-    padding: 3px 2px;
-  }
-  .ending-check {
-    width: 20px;
-    height: 20px;
-  }
-  .ending-check::before {
-    left: 5px;
-    top: 2px;
-    width: 7px;
-    height: 12px;
-  }
-  .ending-reset {
-    width: 24px;
-    height: 24px;
-  }
+  .ending-box { width: 100%; justify-content: flex-end; gap: 14px; padding-top: 4px; }
+  .ending-label { font-size: 14px; gap: 6px; min-height: 28px; padding: 3px 2px; }
+  .ending-check { width: 20px; height: 20px; }
+  .ending-check::before { left: 5px; top: 2px; width: 7px; height: 12px; }
+  .ending-reset { width: 24px; height: 24px; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-  }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- ==================== 顶部标题区 ==================== -->
 <header class="app-header">
   <div class="header-inner">
     <span class="title-bar" aria-hidden="true"></span>
@@ -844,7 +278,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
       <h1 class="app-title">军藏思维计算仪</h1>
       <p class="app-sub">沉沦者的黑流树海 · 自然物增值推演</p>
     </div>
-    <!-- 结局藏品勾选框（登录后与云端同步，刷新自然物不重置此状态） -->
     <div class="ending-box" id="endingBox">
       <label class="ending-label lb-a">
         <input type="checkbox" class="ending-check" id="endingAlpha" aria-label="沙盘α">
@@ -858,7 +291,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
         <input type="checkbox" class="ending-check" id="endingBeacon" aria-label="怦然信标">
         <span>怦然信标</span>
       </label>
-      <!-- 圆形刷新按钮：仅重置结局藏品勾选（取消三个勾选，不动自然物数量） -->
       <button type="button" class="ending-reset" id="endingResetBtn" aria-label="重置结局藏品勾选">
         <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
           <path d="M20 11a8 8 0 1 0-2.34 5.66" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
@@ -869,7 +301,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   </div>
 </header>
 
-<!-- ==================== PWA 安装按钮（可安装时显示） ==================== -->
 <button type="button" class="install-fab" id="installBtn" hidden aria-label="安装到主屏幕">
   <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
     <path d="M12 3v11m0 0l-4-4m4 4l4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -878,7 +309,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   <span>安装到主屏幕</span>
 </button>
 
-<!-- ==================== 树海氛围光点 ==================== -->
 <div class="particles" aria-hidden="true">
   <span class="particle p1"></span>
   <span class="particle p2"></span>
@@ -889,25 +319,38 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 </div>
 
 <main class="app-main">
-
-  <!-- ==================== 自然物库存输入区（含商店净增值） ==================== -->
   <section class="panel" aria-label="自然物库存">
     <div id="matList" class="mat-list"></div>
     <div class="mat-actions">
-      <!-- 重置按钮：仅重置全部自然物数量（保留结局藏品勾选状态） -->
       <button type="button" class="reset-btn" id="resetBtn">重置</button>
     </div>
   </section>
 
-  <!-- ==================== 作战增值排序区 ==================== -->
   <section class="panel rank-panel" aria-label="作战增值排序">
     <h2 class="section-title">作战增值排序</h2>
     <div id="rankList" class="rank-list"></div>
   </section>
-
 </main>
 
-<!-- ==================== 均藏对局收录（默认收起，页面最底部） ==================== -->
+<!-- 位置互换：不期而遇在上方 -->
+<section class="records-panel" id="encPanel" aria-label="不期而遇筛选记录">
+  <button type="button" class="records-head" id="encHead" aria-expanded="false">
+    <span class="records-title">不期而遇筛选记录</span>
+    <span class="records-avg" id="encCount">已勾选：<b>0</b></span>
+    <span class="records-arrow" aria-hidden="true">▸</span>
+  </button>
+  <div class="records-body" id="encBody">
+    <div class="enc-inner">
+      <div class="enc-floors" id="encFloors" role="group" aria-label="选择层数"></div>
+      <div class="enc-grid" id="encGrid"></div>
+      <div class="enc-actions">
+        <button type="button" class="enc-reset" id="encResetBtn">重置勾选</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 位置互换：均藏在下方 -->
 <section class="records-panel" id="recordsPanel" aria-label="均藏对局收录">
   <button type="button" class="records-head" id="recordsHead" aria-expanded="false">
     <span class="records-title">均藏对局收录</span>
@@ -915,7 +358,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
     <span class="records-arrow" aria-hidden="true">▸</span>
   </button>
   <div class="records-body" id="recordsBody">
-    <!-- 登录 / 注册框：未登录时数据仅存本机（localStorage 暂存），登录后云端同步 -->
     <div class="auth-box" id="authBox"></div>
     <div id="recordsList" class="records-list"></div>
     <div class="records-empty" id="recordsEmpty">暂无对局，点击下方按钮添加</div>
@@ -923,7 +365,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
       <button type="button" class="records-add" id="recordsAddBtn">+ 添加对局</button>
       <button type="button" class="records-clear" id="recordsClearBtn">清空全部对局</button>
     </div>
-    <!-- 对局收藏品数量折线图（数据随 records 实时更新） -->
     <div class="chart-wrap" id="chartWrap">
       <div class="chart-empty" id="chartEmpty">暂无数据，请添加对局</div>
       <canvas id="relicChart" aria-label="对局收藏品数量折线图"></canvas>
@@ -934,11 +375,9 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 <noscript><p style="text-align:center;padding:24px;color:#6a7a6a;">本工具需要启用 JavaScript 才能计算。</p></noscript>
 
 <script>
-/* ============================================================
-   数据模型 —— 修改此处可调整数据
-   ============================================================ */
 const materials = [
   { id: 'corn',  name: '回声玉米', emoji: '🌽', desc: '每次招募干员时估价 +3', recruitBonus: 3, partsBonus: 0, battleBonus: 0 },
+  { id: 'heartgrass', name: '恋心草', emoji: '🔥', desc: '每次作战后估价 +6', recruitBonus: 0, partsBonus: 0, battleBonus: 6 },
   { id: 'frost', name: '霜晶树',   emoji: '🌲', desc: '每次作战后估价 +4',     recruitBonus: 0, partsBonus: 0, battleBonus: 4 },
   { id: 'blood', name: '血蕈',     emoji: '🍄', desc: '每次作战后估价 +2',     recruitBonus: 0, partsBonus: 0, battleBonus: 2 },
   { id: 'vine',  name: '板藤',     emoji: '🌰', desc: '每次获得零件时估价 +4', recruitBonus: 0, partsBonus: 4, battleBonus: 0 },
@@ -953,15 +392,34 @@ const operations = [
   { id: 'outpost',  name: '居民据点', recruitCount: 1, partsCount: 2 }
 ];
 
-const STORAGE_KEY = 'aks-heiliu-shuhai-materials-v1';
+// 更新了名称（保留外号，去掉数字）和湖中仙女的层数
+const encounters = [
+  { name: '鸭托邦（熊本）', floors: [3, 4] },
+  { name: '传奇团伙（鸭本）', floors: [4, 5, 6] },
+  { name: '湖中仙女（仙人跳）', floors: [3, 4, 5] },
+  { name: '洞中宝（挖宝）', floors: [3, 4] },
+  { name: '货从口出（马头）', floors: [2, 3, 4, 5, 6] },
+  { name: '沉重的契约（五火）', floors: [2, 3, 4, 5] },
+  { name: '敲动杠杆（地鼠）', floors: [1, 2, 3, 4, 5, 6] },
+  { name: '血衣之下（剑锤）', floors: [2, 3, 4, 5] },
+  { name: '擒与缚（老鹰）', floors: [3, 4, 5, 6] },
+  { name: '黑诞（追猎图）', floors: [3, 4, 5] },
+  { name: '呼吸的红苔（沃土）', floors: [2, 3, 4] },
+  { name: '被歌颂的影子（大狗跳）', floors: [2, 3, 4, 5, 6] },
+  { name: '愈创之心（追忆）', floors: [4] },
+  { name: '临时中介所（临招）', floors: [2, 3, 4, 5] },
+  { name: '和平守卫者（火杆）', floors: [4, 5] },
+  { name: '独活（应急）', floors: [2, 3, 4] }
+];
 
-/* 状态：各自然物持有数量 */
+const STORAGE_KEY = 'aks-heiliu-shuhai-materials-v1';
+const RECORDS_KEY = 'aks-heiliu-shuhai-records-v1';
+const ENDINGS_KEY = 'aks-heiliu-shuhai-endings-v1';
+const ENCOUNTERS_KEY = 'aks-heiliu-shuhai-unexpected-encounters-v1';
+
 const state = {};
 for (const m of materials) state[m.id] = 0;
 
-/* ============================================================
-   持久化：localStorage 保存 / 恢复
-   ============================================================ */
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -971,18 +429,15 @@ function loadState() {
       const v = parseInt(obj[m.id], 10);
       state[m.id] = Number.isFinite(v) && v >= 0 ? v : 0;
     }
-  } catch (e) { /* 数据损坏时忽略，使用默认值 */ }
+  } catch (e) { }
 }
-
 function saveState() {
   try {
     const obj = {};
     for (const m of materials) obj[m.id] = state[m.id];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-  } catch (e) { /* 隐私模式等场景静默失败 */ }
+  } catch (e) { }
 }
-
-/* 输入清洗：空值按 0，负数 / 小数修正为非负整数 */
 function sanitize(raw) {
   if (raw === '' || raw == null) return 0;
   const n = Number(raw);
@@ -990,28 +445,22 @@ function sanitize(raw) {
   return Math.max(0, Math.floor(n));
 }
 
-/* ============================================================
-   核心计算逻辑 —— 修改此处可调整规则
-   ============================================================ */
 function calcValue(op, mats) {
   let total = 0;
   total += mats.corn  * 3 * op.recruitCount;
+  total += mats.heartgrass * 6;
   total += mats.frost * 4;
   total += mats.blood * 2;
   total += mats.vine  * 4 * op.partsCount;
   total += mats.moss  * 1 * op.partsCount;
   return total;
 }
-
 function getMats() {
   const s = {};
   for (const m of materials) s[m.id] = state[m.id];
   return s;
 }
 
-/* ============================================================
-   DOM 构建
-   ============================================================ */
 function buildMaterialRows() {
   const list = document.getElementById('matList');
   list.innerHTML = '';
@@ -1035,7 +484,6 @@ function buildMaterialRows() {
         </button>
       </div>`;
     list.appendChild(row);
-    /* 商店招募券净增值行：跟随回声玉米之后 */
     if (m.id === 'corn') {
       const shop = document.createElement('div');
       shop.className = 'shop-row';
@@ -1047,7 +495,6 @@ function buildMaterialRows() {
   });
 }
 
-/* 柱状图行只构建一次，渲染时原地更新 + 按增值重排 */
 const rankRefs = [];
 function buildRanking() {
   const list = document.getElementById('rankList');
@@ -1074,28 +521,21 @@ function buildRanking() {
   });
 }
 
-/* ============================================================
-   渲染：实时重算 + 按增值从大到小排序
-   ============================================================ */
 function render() {
   const mats = getMats();
   const values = operations.map(op => calcValue(op, mats));
   const max = Math.max(...values);
 
-  /* 第一排序：总增值从大到小；
-     同值时以括号内等效收藏品数量（含紧急作战 / 居民据点额外 +1 奖励）从大到小 */
   const effs = operations.map((op, i) => values[i] / 10 + ((op.id === 'urgent' || op.id === 'outpost') ? 1 : 0));
   const order = operations.map((_, i) => i).sort((a, b) => (values[b] - values[a]) || (effs[b] - effs[a]));
-  const bestIdx = order[0];   /* 排在最前的即为第一名 */
+  const bestIdx = order[0];
 
-  /* 第一名相对普通作战的增值百分比（baseline = 普通作战） */
   const normalIdx = operations.findIndex(op => op.id === 'normal');
   const normalV = values[normalIdx];
   const bestPct = normalV > 0
     ? Math.round(((values[bestIdx] - normalV) / normalV) * 100)
     : (values[bestIdx] > 0 ? Infinity : 0);
 
-  /* 排序变化时重排 DOM 行 */
   const list = document.getElementById('rankList');
   let needReorder = false;
   order.forEach((idx, pos) => {
@@ -1103,7 +543,6 @@ function render() {
   });
   if (needReorder) order.forEach(idx => list.appendChild(rankRefs[idx].row));
 
-  /* —— 柱状图 —— */
   rankRefs.forEach((ref, i) => {
     const v = values[i];
     const isBest = i === bestIdx;
@@ -1117,23 +556,16 @@ function render() {
     }
     ref.valueEl.dataset.v = v;
     ref.row.classList.toggle('best', isBest);
-    ref.markEl.innerHTML = isBest
-      ? '<span class="best-mark" aria-label="最高收益">▶</span>'
-      : '';
-    /* 😍 + 相对普通作战的百分比（位于名称正下方，仅第一名显示） */
-    ref.emojiEl.textContent = isBest
-      ? '😍 ' + (bestPct === Infinity ? '+∞' : '+' + bestPct + '%')
-      : '😍';
+    ref.markEl.innerHTML = isBest ? '<span class="best-mark" aria-label="最高收益">▶</span>' : '';
+    ref.emojiEl.textContent = isBest ? '😍 ' + (bestPct === Infinity ? '+∞' : '+' + bestPct + '%') : '😍';
     const op = operations[i];
     const equiv = (v / 10).toFixed(1);
-    /* 紧急作战 / 居民据点：实际还会多获得 1 收藏品，括号内为包含该奖励的数量 */
     const meta = (op.id === 'urgent' || op.id === 'outpost')
       ? '≈ ' + equiv + ' （' + ((v / 10) + 1).toFixed(1) + '）收藏品'
       : '≈ ' + equiv + ' 收藏品';
     if (ref.metaEl.textContent !== meta) ref.metaEl.textContent = meta;
   });
 
-  /* —— 商店招募券净增值：玉米数量 × 3 - 4 —— */
   const shopNet = mats.corn * 3 - 4;
   const shopEl = document.getElementById('shopNet');
   const shopText = String(shopNet);
@@ -1144,15 +576,13 @@ function render() {
   shopEl.classList.toggle('neg', shopNet < 0);
 }
 
-/* 数字变化 scale(1.05) 脉动 */
 function pulse(el) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   el.classList.remove('pulse');
-  void el.offsetWidth; /* 强制重排以重启动画 */
+  void el.offsetWidth;
   el.classList.add('pulse');
 }
 
-/* 应用一次增减并同步界面 */
 function applyStep(id, delta) {
   state[id] = Math.max(0, state[id] + delta);
   document.querySelector('.mat-row[data-id="' + id + '"] .qty-input').value = state[id];
@@ -1160,27 +590,14 @@ function applyStep(id, delta) {
   render();
 }
 
-/* ============================================================
-   交互：按钮增减（含长按连续）+ 输入校验（全部实时计算）
-   ============================================================ */
 function wireInputs() {
   const list = document.getElementById('matList');
-
-  /* 单击 - / +：每次物理点击只增减 1。
-     单次增减只由 click 事件执行（pointerdown 不做任何增减，只负责长按计时），
-     从根上避免「点一次变动 2」。
-     长按完全独立：按住 2000ms 后每 1000ms ±1，松手停止；
-     长按结束后的尾随 click 会被吞掉；
-     同一物理点击被浏览器派发两次 click（pointer + 兼容 mouse）时，
-     用 120ms 时间窗去重，保证一次点击恰好只变动 1。 */
   list.querySelectorAll('.qty-btn').forEach(btn => {
     const id = btn.closest('.mat-row').dataset.id;
     const delta = btn.dataset.act === 'plus' ? 1 : -1;
-
-    /* —— 长按连续调整（独立逻辑，与 click 无叠加） —— */
     let holdTimer = null;
     let repeatTimer = null;
-    let repeatActive = false;              /* 长按已开始连续增减 */
+    let repeatActive = false;
     const startHold = () => {
       holdTimer = setTimeout(() => {
         repeatActive = true;
@@ -1191,47 +608,36 @@ function wireInputs() {
     const stopHold = () => {
       clearTimeout(holdTimer);
       if (repeatTimer) clearInterval(repeatTimer);
-      holdTimer = null;
-      repeatTimer = null;
-      /* 兜底：若松手后浏览器未派发尾随 click，稍后恢复正常点击 */
+      holdTimer = null; repeatTimer = null;
       setTimeout(() => { repeatActive = false; }, 250);
     };
     btn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      try { btn.setPointerCapture(e.pointerId); } catch (err) { /* 桌面端忽略 */ }
-      startHold();                          /* 仅启动长按计时，不增减 */
+      try { btn.setPointerCapture(e.pointerId); } catch (err) { }
+      startHold();
     });
     btn.addEventListener('pointerup', stopHold);
     btn.addEventListener('pointercancel', stopHold);
     btn.addEventListener('pointerleave', stopHold);
-
-    /* —— 单次点击：只用 click 增减 1 —— */
-    let lastClickAt = -1000;               /* 兼容重复 click 去重窗口 */
+    let lastClickAt = -1000;
     btn.addEventListener('click', () => {
-      if (repeatActive) { repeatActive = false; return; }   /* 吞掉长按尾随 click */
+      if (repeatActive) { repeatActive = false; return; }
       const now = Date.now();
-      if (now - lastClickAt < 120) return;                   /* 同一物理点击的重复 click */
+      if (now - lastClickAt < 120) return;
       lastClickAt = now;
       applyStep(id, delta);
     });
   });
 
-  /* 输入框：聚焦自动全选，空值按 0，负数 / 小数自动修正 */
   list.querySelectorAll('.qty-input').forEach(input => {
     const row = input.closest('.mat-row');
     const id = row.dataset.id;
-
-    /* 点击输入框自动全选，直接键入即可覆盖旧值 */
-    input.addEventListener('focus', () => {
-      requestAnimationFrame(() => input.select());
-    });
-
+    input.addEventListener('focus', () => { requestAnimationFrame(() => input.select()); });
     input.addEventListener('input', () => {
       const raw = input.value;
-      if (raw === '') {
-        state[id] = 0;                       /* 空值按 0 处理 */
-      } else if (!Number.isFinite(Number(raw)) || Number(raw) < 0 || !Number.isInteger(Number(raw))) {
-        const fixed = sanitize(raw);         /* 负数 / 小数立即修正 */
+      if (raw === '') { state[id] = 0; }
+      else if (!Number.isFinite(Number(raw)) || Number(raw) < 0 || !Number.isInteger(Number(raw))) {
+        const fixed = sanitize(raw);
         state[id] = fixed;
         input.value = String(fixed);
       } else {
@@ -1240,18 +646,13 @@ function wireInputs() {
       saveState();
       render();
     });
-
     input.addEventListener('blur', () => {
       if (input.value === '') {
-        input.value = '0';
-        state[id] = 0;
-        saveState();
-        render();
+        input.value = '0'; state[id] = 0; saveState(); render();
       }
     });
   });
 
-  /* 重置自然物数量（结局藏品勾选状态保留） */
   const resetMaterials = () => {
     for (const m of materials) state[m.id] = 0;
     document.querySelectorAll('.mat-row').forEach(row => {
@@ -1260,21 +661,119 @@ function wireInputs() {
     saveState();
     render();
   };
-  /* 自然物面板底部的「重置」文字按钮：仅重置自然物 */
   document.getElementById('resetBtn').addEventListener('click', resetMaterials);
-  /* 勾选框最右侧的圆形刷新按钮：仅重置结局藏品（取消勾选 + 清空本地 + 同步云端），不动自然物 */
   const endingReset = document.getElementById('endingResetBtn');
   if (endingReset) endingReset.addEventListener('click', resetEndings);
 }
 
-/* ============================================================
-   均藏对局收录：对局记录持久化 + 实时均藏计算
-   ============================================================ */
-const RECORDS_KEY = 'aks-heiliu-shuhai-records-v1';
-const ENDINGS_KEY = 'aks-heiliu-shuhai-endings-v1';
-let records = [];          /* [{ desc: 对局说明, num: 收藏品数量 }] */
+const encState = {};
+let currentEncFloor = 2;
+const encFloorNames = ['第二层', '第三层', '第四层', '第五层', '第六层'];
 
-/* 结局藏品勾选状态（沙盘α / 沙盘β / 怦然信标） */
+function loadEncState() {
+  try {
+    const raw = localStorage.getItem(ENCOUNTERS_KEY);
+    if (raw) {
+      const obj = JSON.parse(raw);
+      Object.keys(obj).forEach(k => { if (typeof obj[k] === 'boolean') encState[k] = obj[k]; });
+    }
+  } catch (e) { }
+}
+function saveEncState() {
+  try { localStorage.setItem(ENCOUNTERS_KEY, JSON.stringify(encState)); } catch (e) { }
+}
+
+function buildEncFloors() {
+  const container = document.getElementById('encFloors');
+  container.innerHTML = encFloorNames.map((name, i) => {
+    const f = i + 2;
+    return `<button type="button" class="enc-floor-btn ${f === currentEncFloor ? 'active' : ''}" data-floor="${f}">${name}</button>`;
+  }).join('');
+
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.enc-floor-btn');
+    if (!btn) return;
+    currentEncFloor = parseInt(btn.dataset.floor, 10);
+    container.querySelectorAll('.enc-floor-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.floor, 10) === currentEncFloor);
+    });
+    updateEncGridHighlights();
+  });
+}
+
+function buildEncGrid() {
+  const grid = document.getElementById('encGrid');
+  grid.innerHTML = encounters.map(enc => `
+    <label class="enc-item ${encState[enc.name] ? 'checked' : ''}" data-name="${enc.name}">
+      <input type="checkbox" class="enc-check" ${encState[enc.name] ? 'checked' : ''}>
+      <span class="enc-name">${enc.name}</span>
+    </label>
+  `).join('');
+
+  grid.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('enc-check')) return;
+    const label = e.target.closest('.enc-item');
+    const name = label.dataset.name;
+    encState[name] = e.target.checked;
+    
+    // 动态切换 checked 类以触发变红
+    if (e.target.checked) {
+      label.classList.add('checked');
+    } else {
+      label.classList.remove('checked');
+    }
+    
+    saveEncState();
+    updateEncCount();
+  });
+
+  updateEncGridHighlights();
+}
+
+function updateEncGridHighlights() {
+  document.querySelectorAll('.enc-item').forEach(item => {
+    const name = item.dataset.name;
+    const enc = encounters.find(e => e.name === name);
+    if (enc && enc.floors.includes(currentEncFloor)) {
+      item.classList.add('available');
+    } else {
+      item.classList.remove('available');
+    }
+  });
+}
+
+function updateEncCount() {
+  const count = Object.values(encState).filter(v => v).length;
+  document.getElementById('encCount').innerHTML = `已勾选：<b>${count}</b>`;
+}
+
+function wireEncPanel() {
+  const panel = document.getElementById('encPanel');
+  const head = document.getElementById('encHead');
+  const body = document.getElementById('encBody');
+  
+  head.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    head.setAttribute('aria-expanded', String(open));
+    body.style.maxHeight = open ? (body.scrollHeight + 'px') : '0px';
+  });
+
+  window.addEventListener('resize', () => {
+    if (panel.classList.contains('open')) {
+      body.style.maxHeight = body.scrollHeight + 'px';
+    }
+  });
+
+  document.getElementById('encResetBtn').addEventListener('click', () => {
+    Object.keys(encState).forEach(k => encState[k] = false);
+    saveEncState();
+    document.querySelectorAll('.enc-check').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.enc-item').forEach(item => item.classList.remove('checked'));
+    updateEncCount();
+  });
+}
+
+let records = [];
 const endings = { sandboxAlpha: false, sandboxBeta: false, beacon: false };
 
 function loadRecords() {
@@ -1290,14 +789,10 @@ function loadRecords() {
       hasSandboxBeta: !!r.hasSandboxBeta,
       hasBeacon: !!r.hasBeacon
     }));
-  } catch (e) { /* 数据损坏时忽略，使用空列表 */ }
+  } catch (e) { }
 }
+function saveRecords() { try { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); } catch (e) { } }
 
-function saveRecords() {
-  try { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); } catch (e) { /* 静默 */ }
-}
-
-/* 均藏 = 已填写收藏品数量之和 ÷ 已填写行数（忽略空值 / 非数字） */
 function computeAvg() {
   let sum = 0, n = 0;
   for (const r of records) {
@@ -1305,7 +800,6 @@ function computeAvg() {
   }
   return n > 0 ? sum / n : null;
 }
-
 function updateAvgDisplay() {
   const avg = computeAvg();
   document.getElementById('recordsAvg').textContent = avg === null ? '--' : avg.toFixed(1);
@@ -1330,6 +824,7 @@ function renderRecords() {
     const descIn = row.querySelector('.record-desc');
     const numIn = row.querySelector('.record-num');
     const delBtn = row.querySelector('.record-del');
+    
     descIn.addEventListener('input', () => {
       records[i].desc = descIn.value;
       saveRecords();
@@ -1338,15 +833,12 @@ function renderRecords() {
     });
     numIn.addEventListener('input', () => {
       const raw = numIn.value;
-      if (raw === '') {
-        records[i].num = '';                 /* 空值按未填写处理 */
-      } else if (!Number.isFinite(Number(raw)) || Number(raw) < 0 || !Number.isInteger(Number(raw))) {
-        const fixed = Math.max(0, Math.floor(Number(raw)));   /* 负数 / 小数修正 */
+      if (raw === '') { records[i].num = ''; }
+      else if (!Number.isFinite(Number(raw)) || Number(raw) < 0 || !Number.isInteger(Number(raw))) {
+        const fixed = Math.max(0, Math.floor(Number(raw)));
         records[i].num = fixed;
         numIn.value = String(fixed);
-      } else {
-        records[i].num = Number(raw);
-      }
+      } else { records[i].num = Number(raw); }
       saveRecords();
       updateAvgDisplay();
       updateChart();
@@ -1354,13 +846,10 @@ function renderRecords() {
       else if (!numIn._hinted) { numIn._hinted = true; hintLocal(); }
     });
     delBtn.addEventListener('click', async () => {
-      /* 已登录且该行有云端 id：先删云端，失败则中止（避免本地残留幽灵行） */
       if (currentUser && supabaseClient && records[i].id) {
         const { error } = await supabaseClient.from('duiju_records').delete().eq('id', records[i].id);
         if (error) { showAuthMsg('云端删除失败：' + error.message, true); return; }
-      } else if (!currentUser) {
-        hintLocal();
-      }
+      } else if (!currentUser) { hintLocal(); }
       records.splice(i, 1);
       saveRecords();
       renderRecords();
@@ -1369,7 +858,6 @@ function renderRecords() {
   empty.classList.toggle('show', records.length === 0);
   updateAvgDisplay();
   updateChart();
-  /* 展开状态下新增 / 删除行后，刷新展开高度，避免内容被裁剪 */
   const panel = document.getElementById('recordsPanel');
   if (panel.classList.contains('open')) {
     const body = document.getElementById('recordsBody');
@@ -1382,36 +870,22 @@ function wireRecords() {
   const head = document.getElementById('recordsHead');
   const body = document.getElementById('recordsBody');
 
-  /* 点击标题行或箭头展开 / 收起（平滑高度过渡） */
   head.addEventListener('click', () => {
     const open = panel.classList.toggle('open');
     head.setAttribute('aria-expanded', String(open));
     body.style.maxHeight = open ? (body.scrollHeight + 'px') : '0px';
   });
-
-  /* 窗口尺寸变化时同步展开高度 */
   window.addEventListener('resize', () => {
-    if (panel.classList.contains('open')) {
-      body.style.maxHeight = body.scrollHeight + 'px';
-    }
+    if (panel.classList.contains('open')) body.style.maxHeight = body.scrollHeight + 'px';
   });
 
-  /* + 添加对局：登录后先写入云端，未登录则暂存本机并提示登录 */
   document.getElementById('recordsAddBtn').addEventListener('click', async () => {
-    /* 新对局快照当前结局藏品勾选状态，随云端一起保存 */
-    const rec = {
-      desc: '', num: '',
-      hasSandboxAlpha: endings.sandboxAlpha,
-      hasSandboxBeta: endings.sandboxBeta,
-      hasBeacon: endings.beacon
-    };
+    const rec = { desc: '', num: '', hasSandboxAlpha: endings.sandboxAlpha, hasSandboxBeta: endings.sandboxBeta, hasBeacon: endings.beacon };
     if (currentUser && supabaseClient) {
       const row = await cloudInsert(rec);
-      if (!row) return;          /* 云端写入失败，不产生本地幽灵行 */
+      if (!row) return;
       rec.id = row.id;
-    } else {
-      hintLocal();
-    }
+    } else { hintLocal(); }
     records.push(rec);
     saveRecords();
     renderRecords();
@@ -1420,43 +894,25 @@ function wireRecords() {
     if (last) last.querySelector('.record-desc').focus();
   });
 
-  /* 清空全部对局：确认后清空并重置均藏 */
   document.getElementById('recordsClearBtn').addEventListener('click', async () => {
     const btn = document.getElementById('recordsClearBtn');
     let confirmed = false;
-    try {
-      confirmed = window.confirm('确认清空全部对局记录？此操作不可恢复。');
-    } catch (e) {
-      /* 弹窗被环境禁用：降级为按钮二次点击确认 */
-      if (btn.dataset.arm === '1') {
-        btn.dataset.arm = '';
-        btn.textContent = '清空全部对局';
-        confirmed = true;
-      } else {
-        btn.dataset.arm = '1';
-        btn.textContent = '再次点击确认清空';
-        setTimeout(() => {
-          btn.dataset.arm = '';
-          btn.textContent = '清空全部对局';
-        }, 3500);
+    try { confirmed = window.confirm('确认清空全部对局记录？此操作不可恢复。'); }
+    catch (e) {
+      if (btn.dataset.arm === '1') { btn.dataset.arm = ''; btn.textContent = '清空全部对局'; confirmed = true; }
+      else {
+        btn.dataset.arm = '1'; btn.textContent = '再次点击确认清空';
+        setTimeout(() => { btn.dataset.arm = ''; btn.textContent = '清空全部对局'; }, 3500);
       }
     }
     if (!confirmed) return;
     if (currentUser && supabaseClient) {
-      /* Supabase 禁止无条件 delete：逐条删除当前用户记录（RLS 限定本人） */
-      for (const r of records) {
-        if (r.id) await supabaseClient.from('duiju_records').delete().eq('id', r.id);
-      }
+      for (const r of records) { if (r.id) await supabaseClient.from('duiju_records').delete().eq('id', r.id); }
     }
-    records = [];
-    saveRecords();
-    renderRecords();
+    records = []; saveRecords(); renderRecords();
   });
 }
 
-/* ============================================================
-   结局藏品勾选状态：localStorage 持久化 + 云端同步（节流）
-   ============================================================ */
 function loadEndings() {
   try {
     const raw = localStorage.getItem(ENDINGS_KEY);
@@ -1465,12 +921,9 @@ function loadEndings() {
     endings.sandboxAlpha = !!obj.sandboxAlpha;
     endings.sandboxBeta = !!obj.sandboxBeta;
     endings.beacon = !!obj.beacon;
-  } catch (e) { /* 数据损坏时忽略，保持默认 */ }
+  } catch (e) { }
 }
-function saveEndings() {
-  try { localStorage.setItem(ENDINGS_KEY, JSON.stringify(endings)); } catch (e) { /* 静默 */ }
-}
-/* 将结局藏品状态回显到顶部三个勾选框 */
+function saveEndings() { try { localStorage.setItem(ENDINGS_KEY, JSON.stringify(endings)); } catch (e) { } }
 function syncEndingChecks() {
   const map = { endingAlpha: endings.sandboxAlpha, endingBeta: endings.sandboxBeta, endingBeacon: endings.beacon };
   for (const [id, v] of Object.entries(map)) {
@@ -1478,57 +931,37 @@ function syncEndingChecks() {
     if (el) el.checked = !!v;
   }
 }
-/* 仅重置结局藏品：取消三个勾选、清空本地存储并同步云端（不动自然物数量） */
 function resetEndings() {
-  endings.sandboxAlpha = false;
-  endings.sandboxBeta = false;
-  endings.beacon = false;
-  try { localStorage.removeItem(ENDINGS_KEY); } catch (e) { /* 静默 */ }
-  syncEndingChecks();
-  queueEndingSync();
+  endings.sandboxAlpha = false; endings.sandboxBeta = false; endings.beacon = false;
+  try { localStorage.removeItem(ENDINGS_KEY); } catch (e) { }
+  syncEndingChecks(); queueEndingSync();
 }
-/* 结局藏品云端同步：节流 400ms，写入最近一局（随该行记录携带） */
 let endingTimer = null;
 async function syncEndingsToCloud() {
   if (!currentUser || !supabaseClient) return;
   const last = records[records.length - 1];
-  if (!last || !last.id) return;   /* 尚无云端记录：状态随下次新增一起提交 */
+  if (!last || !last.id) return;
   last.hasSandboxAlpha = endings.sandboxAlpha;
   last.hasSandboxBeta = endings.sandboxBeta;
   last.hasBeacon = endings.beacon;
   await cloudUpdate(last);
 }
-function queueEndingSync() {
-  clearTimeout(endingTimer);
-  endingTimer = setTimeout(syncEndingsToCloud, 400);
-}
+function queueEndingSync() { clearTimeout(endingTimer); endingTimer = setTimeout(syncEndingsToCloud, 400); }
 function wireEndings() {
-  const pairs = [
-    ['endingAlpha', 'sandboxAlpha'],
-    ['endingBeta', 'sandboxBeta'],
-    ['endingBeacon', 'beacon']
-  ];
+  const pairs = [['endingAlpha', 'sandboxAlpha'], ['endingBeta', 'sandboxBeta'], ['endingBeacon', 'beacon']];
   pairs.forEach(([id, key]) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', () => {
-      endings[key] = el.checked;
-      saveEndings();
-      queueEndingSync();
+      endings[key] = el.checked; saveEndings(); queueEndingSync();
     });
   });
 }
 
-/* ============================================================
-   对局收藏品数量折线图（Chart.js，数据随 records 实时更新）
-   ============================================================ */
 let relicChart = null;
-/* 折线图中收藏品数量最高的数据点下标集合（用于 ⭐ 星形标记） */
 let chartMaxSet = new Set();
-/* 当前均藏数值（有效收藏品数量的平均值），供参考虚线使用；无有效值时 null */
 let chartAvgValue = null;
 
-/* 均藏参考线：水平虚线（#5B8DB8），右上方标注「均藏 x.x」 */
 const avgLinePlugin = {
   id: 'avgLine',
   afterDatasetsDraw(chart) {
@@ -1539,17 +972,10 @@ const avgLinePlugin = {
     const { left, right } = chart.chartArea;
     const ctx = chart.ctx;
     ctx.save();
-    ctx.strokeStyle = '#5B8DB8';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 4]);
-    ctx.beginPath();
-    ctx.moveTo(left, y);
-    ctx.lineTo(right, y);
-    ctx.stroke();
+    ctx.strokeStyle = '#5B8DB8'; ctx.lineWidth = 1; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#5B8DB8';
-    ctx.font = '9px system-ui, sans-serif';
-    ctx.textAlign = 'right';
+    ctx.fillStyle = '#5B8DB8'; ctx.font = '9px system-ui, sans-serif'; ctx.textAlign = 'right';
     ctx.fillText('均藏 ' + avg.toFixed(1), right, y - 3);
     ctx.restore();
   }
@@ -1560,28 +986,25 @@ function updateChart() {
   const empty = document.getElementById('chartEmpty');
   if (!canvas || !empty) return;
   if (typeof Chart === 'undefined') {
-    empty.textContent = '图表组件加载失败';
-    empty.style.display = 'flex';
-    return;
+    empty.textContent = '图表组件加载失败'; empty.style.display = 'flex'; return;
   }
   if (records.length === 0) {
-    empty.textContent = '暂无数据，请添加对局';
-    empty.style.display = 'flex';
+    empty.textContent = '暂无数据，请添加对局'; empty.style.display = 'flex';
     if (relicChart) { relicChart.destroy(); relicChart = null; }
     return;
   }
   empty.style.display = 'none';
-  /* X 轴为局数顺序（第 1 局…第 N 局），Y 轴为每局收藏品数量，空值显示为断点 */
   const labels = records.map((_, i) => '第' + (i + 1) + '局');
   const data = records.map(r => (r.num !== '' && r.num != null ? r.num : null));
-  /* 计算最高值下标（忽略空值断点；多个并列最高都标记） */
+  
   chartMaxSet.clear();
   let maxV = -Infinity;
   data.forEach((v) => { if (v != null && v > maxV) maxV = v; });
   data.forEach((v, i) => { if (v != null && v === maxV) chartMaxSet.add(i); });
-  /* 均藏参考线数值：有效收藏品数量的平均值（无有效值时 null，不画线） */
+  
   const validVals = data.filter(v => v != null);
   chartAvgValue = validVals.length ? validVals.reduce((a, b) => a + b, 0) / validVals.length : null;
+  
   if (relicChart) {
     relicChart.data.labels = labels;
     relicChart.data.datasets[0].data = data;
@@ -1591,51 +1014,33 @@ function updateChart() {
   relicChart = new Chart(canvas, {
     type: 'line',
     data: {
-      labels,
-      datasets: [{
-        label: '收藏品数量',
-        data,
-        borderColor: '#d4a017',                  /* 暗金折线 */
-        backgroundColor: 'rgba(212, 160, 23, 0.12)',
-        /* 最高收藏品数量的数据点以 ⭐ 星形（暗金）突出，其余为暗红圆点 */
+      labels, datasets: [{
+        label: '收藏品数量', data,
+        borderColor: '#d4a017', backgroundColor: 'rgba(212, 160, 23, 0.12)',
         pointStyle: (ctx) => (chartMaxSet.has(ctx.dataIndex) ? 'star' : 'circle'),
         pointRadius: (ctx) => (chartMaxSet.has(ctx.dataIndex) ? 5 : 3),
         pointBackgroundColor: (ctx) => (chartMaxSet.has(ctx.dataIndex) ? '#d4a017' : '#8b1a1a'),
         pointBorderColor: (ctx) => (chartMaxSet.has(ctx.dataIndex) ? '#d4a017' : '#d4a017'),
-        borderWidth: 2,
-        tension: 0.3,
-        spanGaps: false
+        borderWidth: 2, tension: 0.3, spanGaps: false
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: {
-          grid: { color: '#1a2a1a' },            /* 深灰网格 */
-          ticks: { color: '#6a7a6a', font: { size: 10 } }
-        },
-        y: {
-          beginAtZero: true,
-          grid: { color: '#1a2a1a' },
-          ticks: { color: '#6a7a6a', font: { size: 10 }, precision: 0 }
-        }
+        x: { grid: { color: '#1a2a1a' }, ticks: { color: '#6a7a6a', font: { size: 10 } } },
+        y: { beginAtZero: true, grid: { color: '#1a2a1a' }, ticks: { color: '#6a7a6a', font: { size: 10 }, precision: 0 } }
       }
     },
-    plugins: [avgLinePlugin]   /* 均藏参考虚线（#5B8DB8） */
+    plugins: [avgLinePlugin]
   });
 }
 
-/* ============================================================
-   Supabase 云端同步（均藏对局收录 · 跨设备）
-   —— 修改此处可替换为自己的 Supabase 项目
-   ============================================================ */
 const SUPABASE_URL = 'https://ndngunzkfaamyywihruk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iXpcac8wXRgNwjCyedt-JQ_bV3BC7nX';
 
-let supabaseClient = null;   /* Supabase 客户端；CDN 加载失败时为 null，仅本地模式 */
-let currentUser = null;      /* 当前登录用户 */
+let supabaseClient = null;
+let currentUser = null;
 
 try {
   if (window.supabase && window.supabase.createClient) {
@@ -1643,7 +1048,6 @@ try {
   }
 } catch (e) { supabaseClient = null; }
 
-/* 登录框状态行提示 */
 function showAuthMsg(msg, isError) {
   const el = document.getElementById('authStatus');
   if (!el) return;
@@ -1651,24 +1055,19 @@ function showAuthMsg(msg, isError) {
   el.classList.toggle('err', !!isError);
   el.classList.toggle('ok', !isError);
 }
-
-/* 未登录时的本地暂存提示（不阻断编辑） */
 function hintLocal() {
   const el = document.getElementById('authStatus');
   if (!el) return;
   el.textContent = '请先登录，数据仅暂存本机';
-  el.classList.add('err');
-  el.classList.remove('ok');
+  el.classList.add('err'); el.classList.remove('ok');
 }
 
-/* 输入节流：连续输入 400ms 后同步一次云端，减少请求 */
 let cloudTimer = null;
 function queueCloudUpdate(rec) {
   clearTimeout(cloudTimer);
   cloudTimer = setTimeout(() => cloudUpdate(rec), 400);
 }
 
-/* 云端读取当前用户全部对局（RLS 按用户过滤），替换本地 records */
 async function loadCloudRecords() {
   if (!supabaseClient || !currentUser) return;
   const { data, error } = await supabaseClient.from('duiju_records').select('*');
@@ -1685,22 +1084,17 @@ async function loadCloudRecords() {
     hasSandboxBeta: !!r.has_sandbox_beta,
     hasBeacon: !!r.has_beacon
   }));
-  saveRecords();   /* 同时缓存一份到本机 */
-  /* 结局藏品勾选状态取最近一局（登录后以云端为准），回显到顶部勾选框 */
+  saveRecords();
   if (records.length) {
     const last = records[records.length - 1];
     endings.sandboxAlpha = !!last.hasSandboxAlpha;
     endings.sandboxBeta = !!last.hasSandboxBeta;
     endings.beacon = !!last.hasBeacon;
-    saveEndings();
-    syncEndingChecks();
+    saveEndings(); syncEndingChecks();
   }
 }
 
-/* 云端单条：新增 / 修改 */
 async function cloudInsert(rec) {
-  // 必须带上 user_id，否则会触发 RLS 策略报错
-  // 注意：relic_count 为空字符串时转为 null 或 0，这里按 null 处理
   const { data, error } = await supabaseClient.from('duiju_records').insert({
     user_id: currentUser.id,
     description: rec.desc,
@@ -1724,7 +1118,6 @@ async function cloudUpdate(rec) {
   if (error) showAuthMsg('云端同步失败：' + error.message, true);
 }
 
-/* 登录 / 注册 / 退出 */
 async function authLogin() {
   if (!supabaseClient) { showAuthMsg('云端服务未加载', true); return; }
   const email = document.getElementById('authEmail').value.trim();
@@ -1732,10 +1125,7 @@ async function authLogin() {
   if (!email || !pass) { showAuthMsg('请输入邮箱和密码', true); return; }
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
   if (error) { showAuthMsg(error.message, true); return; }
-  currentUser = data.user;
-  renderAuth();
-  await loadCloudRecords();
-  renderRecords();
+  currentUser = data.user; renderAuth(); await loadCloudRecords(); renderRecords();
   showAuthMsg('已登录，数据同步云端', false);
 }
 async function authRegister() {
@@ -1748,24 +1138,16 @@ async function authRegister() {
   if (data.user && !data.session) {
     showAuthMsg('注册成功，请查收邮箱验证邮件后登录', false);
   } else {
-    currentUser = data.user;   /* 项目未开启邮箱验证时自动登录 */
-    renderAuth();
-    await loadCloudRecords();
-    renderRecords();
+    currentUser = data.user; renderAuth(); await loadCloudRecords(); renderRecords();
     showAuthMsg('已登录，数据同步云端', false);
   }
 }
 async function authLogout() {
   if (supabaseClient) await supabaseClient.auth.signOut();
   currentUser = null;
-  loadRecords();    /* 切回本地暂存 */
-  loadEndings();    /* 结局藏品勾选切回本机记录 */
-  syncEndingChecks();
-  renderAuth();
-  renderRecords();
+  loadRecords(); loadEndings(); syncEndingChecks(); renderAuth(); renderRecords();
 }
 
-/* 渲染登录框：未登录 = 邮箱 / 密码 + 登录 / 注册；已登录 = 账号 + 退出 */
 function renderAuth() {
   const box = document.getElementById('authBox');
   if (!box) return;
@@ -1787,7 +1169,6 @@ function renderAuth() {
   }
 }
 
-/* 初始化：恢复会话 → 拉取云端数据；并监听登录状态变化 */
 async function initAuth() {
   renderAuth();
   if (!supabaseClient) return;
@@ -1795,100 +1176,75 @@ async function initAuth() {
     const { data } = await supabaseClient.auth.getSession();
     currentUser = data.session ? data.session.user : null;
     renderAuth();
-    if (currentUser) {
-      await loadCloudRecords();
-      renderRecords();
-    }
-  } catch (e) { /* 网络异常时保持本地模式 */ }
+    if (currentUser) { await loadCloudRecords(); renderRecords(); }
+  } catch (e) { }
   supabaseClient.auth.onAuthStateChange((_event, session) => {
     currentUser = session ? session.user : null;
     renderAuth();
-    if (currentUser) {
-      loadCloudRecords().then(renderRecords);
-    } else {
-      loadRecords();
-      renderRecords();
-    }
+    if (currentUser) { loadCloudRecords().then(renderRecords); }
+    else { loadRecords(); renderRecords(); }
   });
 }
 
-/* ============================================================
-   PWA：Service Worker 注册 + 「安装到主屏幕」按钮
-   ============================================================ */
 let deferredPrompt = null;
 const installBtn = document.getElementById('installBtn');
-const isStandalone =
-  window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-function showInstallBtn() {
-  if (installBtn && !isStandalone) installBtn.hidden = false;
-}
+function showInstallBtn() { if (installBtn && !isStandalone) installBtn.hidden = false; }
 
-/* Android / 桌面 Chrome、Edge：浏览器提供原生安装事件 */
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  showInstallBtn();
+  e.preventDefault(); deferredPrompt = e; showInstallBtn();
 });
 window.addEventListener('appinstalled', () => {
-  deferredPrompt = null;
-  if (installBtn) installBtn.hidden = true;
+  deferredPrompt = null; if (installBtn) installBtn.hidden = true;
 });
 
 if (installBtn) {
   installBtn.addEventListener('click', async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      try { await deferredPrompt.userChoice; } catch (e) { /* 忽略 */ }
-      deferredPrompt = null;
-      installBtn.hidden = true;
+      try { await deferredPrompt.userChoice; } catch (e) { }
+      deferredPrompt = null; installBtn.hidden = true;
     } else {
-      /* iOS Safari 不支持自动安装，给出手动指引 */
-      alert(
-        '安装方法：\n\n' +
-        '· iPhone / iPad（Safari）：点击底部「分享」图标 → 选择「添加到主屏幕」→ 添加。\n\n' +
-        '· Android（Chrome / Edge）：点右上角菜单「⋮」→「安装应用」或「添加到主屏幕」。\n\n' +
-        '· 电脑（Chrome / Edge）：点地址栏右侧的安装图标，或菜单里的「安装」。'
-      );
+      alert('安装方法：\n\n· iPhone / iPad（Safari）：点击底部「分享」图标 → 选择「添加到主屏幕」→ 添加。\n\n· Android（Chrome / Edge）：点右上角菜单「⋮」→「安装应用」或「添加到主屏幕」。\n\n· 电脑（Chrome / Edge）：点地址栏右侧的安装图标，或菜单里的「安装」。');
     }
   });
 }
 
-/* iOS 不触发 beforeinstallprompt，主动显示按钮提供指引 */
 if (!isStandalone && isIOS) showInstallBtn();
 
-/* 注册 Service Worker（离线缓存） */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
   });
 }
 
-/* ============================================================
-   初始化
-   ============================================================ */
 function init() {
   loadState();
-
   buildMaterialRows();
   buildRanking();
   wireInputs();
+  
   loadRecords();
   loadEndings();
-  renderRecords();      /* 内部会调用 updateChart() 渲染折线图 */
+  renderRecords();
   wireRecords();
   wireEndings();
   syncEndingChecks();
+  
+  loadEncState();
+  buildEncFloors();
+  buildEncGrid();
+  wireEncPanel();
+  updateEncCount();
+  
   initAuth();
 
-  /* 回填输入框 */
   document.querySelectorAll('.mat-row').forEach(row => {
     row.querySelector('.qty-input').value = state[row.dataset.id];
   });
 
-  /* 先以 0 宽度绘制，下一帧渲染触发柱状图从左侧生长（400ms） */
   requestAnimationFrame(() => requestAnimationFrame(render));
   setTimeout(() => document.body.classList.remove('loading'), 650);
 }
@@ -1901,4 +1257,3 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
-<!-- （注：内容由AI生成） -->
