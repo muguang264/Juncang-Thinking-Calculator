@@ -4,7 +4,7 @@
    更新策略：升级缓存内容时，把下方 VERSION 改掉（如 v2），
              旧缓存会在 activate 阶段自动清理。
    ============================================================ */
-const VERSION = 'v3';
+const VERSION = 'v4';
 
 const CORE_CACHE = 'juncang-core-' + VERSION;
 const RUNTIME_CACHE = 'juncang-runtime-' + VERSION;
