@@ -32,6 +32,8 @@
   --row-hover: #161e16;
   --bar-fill: #2a3a2a;
   --green-fixed: #5cb85c;
+  --red-available: #ff4d4d; /* 普通可遇事件红色 */
+  --gray-disabled: #555555; /* 已勾选深灰 */
 
   --fs-title: 20px;
   --fs-sub: 10px;
@@ -94,11 +96,9 @@ body {
 }
 .ending-check:checked::before { opacity: 1; }
 
-.app-main { max-width: 1120px; margin: 0 auto; padding: 10px 12px 0; display: grid; gap: 10px; align-items: start; }
-.panel { position: relative; background: var(--panel); clip-path: var(--bevel); padding: 12px; }
-.panel::before, .panel::after { content: ""; position: absolute; pointer-events: none; }
-.panel::before { inset: 0; background: var(--border); clip-path: var(--bevel); z-index: -1; }
-.panel::after { inset: 1px; background: var(--panel); clip-path: var(--bevel); z-index: -1; }
+.calc-inner { padding: 10px 12px 12px; }
+.app-main { display: grid; gap: 10px; align-items: start; }
+.panel { position: relative; background: var(--panel); clip-path: var(--bevel); padding: 12px; border: 1px solid var(--border); }
 .section-title {
   display: flex; align-items: center; gap: 8px; font-family: "Noto Serif SC", "Songti SC", "SimSun", serif; font-size: var(--fs-section); font-weight: 600; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 8px;
 }
@@ -216,31 +216,50 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 .chart-wrap { position: relative; height: 170px; padding: 10px 12px 12px; border-top: 1px solid var(--border); }
 .chart-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: var(--fs-equiv); color: var(--text-dim); }
 
+/* ============================================================
+   不期而遇筛选记录（字体适配 + 颜色逻辑）
+   ============================================================ */
 .enc-inner { padding: 10px 12px 12px; }
 .enc-floors { display: flex; gap: 4px; margin-bottom: 10px; }
-.enc-floor-btn { flex: 1 1 0; min-width: 0; padding: 6px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: 11px; font-family: inherit; white-space: nowrap; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.enc-floor-btn { flex: 1 1 0; min-width: 0; padding: 6px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: 12px; font-family: inherit; white-space: nowrap; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
 .enc-floor-btn:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
 .enc-floor-btn.active { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212, 160, 23, 0.12); }
 
-.enc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.enc-item { display: flex; align-items: flex-start; gap: 4px; min-width: 0; cursor: pointer; user-select: none; -webkit-user-select: none; }
-.enc-check { position: relative; width: 14px; height: 14px; margin-top: 1px; flex-shrink: 0; appearance: none; -webkit-appearance: none; border: 1px solid var(--border-light); border-radius: 3px; background: var(--bar-track-bg); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.enc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 4px; }
+.enc-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 0; cursor: pointer; user-select: none; -webkit-user-select: none; text-align: center; }
+
+.enc-check { position: relative; width: 18px; height: 18px; margin-bottom: 4px; flex-shrink: 0; appearance: none; -webkit-appearance: none; border: 1px solid var(--border-light); border-radius: 4px; background: var(--bar-track-bg); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
 .enc-check:hover { border-color: var(--gold-bright); }
 .enc-check:checked { border-color: var(--gold-bright); background: rgba(212, 160, 23, 0.14); }
-.enc-check::before { content: ""; position: absolute; left: 3px; top: 0; width: 5px; height: 9px; border-right: 1.8px solid var(--gold-bright); border-bottom: 1.8px solid var(--gold-bright); transform: rotate(45deg); opacity: 0; transition: opacity 0.15s; }
+.enc-check::before { content: ""; position: absolute; left: 5px; top: 1px; width: 6px; height: 11px; border-right: 2px solid var(--gold-bright); border-bottom: 2px solid var(--gold-bright); transform: rotate(45deg); opacity: 0; transition: opacity 0.15s; }
 .enc-check:checked::before { opacity: 1; }
 
-.enc-name { min-width: 0; font-size: 11px; line-height: 1.25; color: var(--text); word-break: break-all; transition: color 0.15s; }
+/* 给文字区设置最小高度，防止因单行长字折行导致整体网格高低不齐 */
+.enc-name { display: flex; flex-direction: column; align-items: center; line-height: 1.2; word-break: break-all; transition: color 0.15s; min-height: 44px; justify-content: flex-start; }
+.enc-main { font-size: 20px; font-weight: 500; color: var(--text); }
+.enc-alias { font-size: 15px; color: var(--text-dim); margin-top: 2px; }
 
-/* 当前层数可出现的事件：名称改为金色 */
-.enc-item.available .enc-name { color: var(--gold-bright); }
-/* 被勾选的事件名称变为红色（优先于金色） */
-.enc-item.checked .enc-name { color: var(--accent) !important; }
-/* 货从口出固定为绿色（最高优先级） */
-.enc-item[data-name="货从口出（马头）"] .enc-name { color: var(--green-fixed) !important; }
+/* 1. 当前层可遇（普通）：红色 */
+.enc-item.available .enc-main { color: var(--red-available); }
+.enc-item.available .enc-alias { color: #cc3333; }
 
-.enc-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-.enc-reset { flex: 1; padding: 7px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; letter-spacing: 0.08em; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s; }
+/* 2. 当前层可遇（带星星）：金色（优先级高于普通可遇） */
+.enc-item.available.has-star .enc-main { color: var(--gold-bright); }
+.enc-item.available.has-star .enc-alias { color: var(--gold); }
+
+/* 3. 勾选状态：变深灰 + 删除线（排除马头，优先级最高） */
+.enc-item.checked:not([data-name="货从口出"]) .enc-main,
+.enc-item.checked:not([data-name="货从口出"]) .enc-alias {
+  color: var(--gray-disabled) !important;
+  text-decoration: line-through;
+}
+
+/* 4. 马头固定绿色（最高优先级，无视可遇/勾选状态） */
+.enc-item[data-name="货从口出"] .enc-main { color: var(--green-fixed) !important; }
+.enc-item[data-name="货从口出"] .enc-alias { color: var(--green-fixed) !important; }
+
+.enc-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--border); }
+.enc-reset { flex: 1; padding: 8px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; letter-spacing: 0.08em; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s; }
 .enc-reset:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
 .enc-reset:active { border-color: var(--accent); background: #233523; }
 
@@ -263,6 +282,10 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   .ending-check { width: 20px; height: 20px; }
   .ending-check::before { left: 5px; top: 2px; width: 7px; height: 12px; }
   .ending-reset { width: 24px; height: 24px; }
+  
+  /* 手机端字号微调，尽量保证一行放得下 */
+  .enc-main { font-size: 15.5px; letter-spacing: -0.5px; }
+  .enc-alias { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -318,21 +341,29 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   <span class="particle p6"></span>
 </div>
 
-<main class="app-main">
-  <section class="panel" aria-label="自然物库存">
-    <div id="matList" class="mat-list"></div>
-    <div class="mat-actions">
-      <button type="button" class="reset-btn" id="resetBtn">重置</button>
+<section class="records-panel open" id="calcPanel" aria-label="作战自然物增值排序" style="margin-top: 10px;">
+  <button type="button" class="records-head" id="calcHead" aria-expanded="true">
+    <span class="records-title">作战自然物增值排序</span>
+    <span class="records-arrow" aria-hidden="true" style="transform: rotate(90deg);">▸</span>
+  </button>
+  <div class="records-body" id="calcBody" style="max-height: none;">
+    <div class="calc-inner">
+      <main class="app-main">
+        <div class="panel" aria-label="自然物库存">
+          <div id="matList" class="mat-list"></div>
+          <div class="mat-actions">
+            <button type="button" class="reset-btn" id="resetBtn">重置</button>
+          </div>
+        </div>
+        <div class="panel rank-panel" aria-label="作战增值排序">
+          <h2 class="section-title">作战增值排序</h2>
+          <div id="rankList" class="rank-list"></div>
+        </div>
+      </main>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="panel rank-panel" aria-label="作战增值排序">
-    <h2 class="section-title">作战增值排序</h2>
-    <div id="rankList" class="rank-list"></div>
-  </section>
-</main>
-
-<!-- 位置互换：不期而遇在上方 -->
 <section class="records-panel" id="encPanel" aria-label="不期而遇筛选记录">
   <button type="button" class="records-head" id="encHead" aria-expanded="false">
     <span class="records-title">不期而遇筛选记录</span>
@@ -350,7 +381,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   </div>
 </section>
 
-<!-- 位置互换：均藏在下方 -->
 <section class="records-panel" id="recordsPanel" aria-label="均藏对局收录">
   <button type="button" class="records-head" id="recordsHead" aria-expanded="false">
     <span class="records-title">均藏对局收录</span>
@@ -392,24 +422,24 @@ const operations = [
   { id: 'outpost',  name: '居民据点', recruitCount: 1, partsCount: 2 }
 ];
 
-// 更新了名称（保留外号，去掉数字）和湖中仙女的层数
+// 包含 star 属性，用于标记重要事件
 const encounters = [
-  { name: '鸭托邦（熊本）', floors: [3, 4] },
-  { name: '传奇团伙（鸭本）', floors: [4, 5, 6] },
-  { name: '湖中仙女（仙人跳）', floors: [3, 4, 5] },
-  { name: '洞中宝（挖宝）', floors: [3, 4] },
-  { name: '货从口出（马头）', floors: [2, 3, 4, 5, 6] },
-  { name: '沉重的契约（五火）', floors: [2, 3, 4, 5] },
-  { name: '敲动杠杆（地鼠）', floors: [1, 2, 3, 4, 5, 6] },
-  { name: '血衣之下（剑锤）', floors: [2, 3, 4, 5] },
-  { name: '擒与缚（老鹰）', floors: [3, 4, 5, 6] },
-  { name: '黑诞（追猎图）', floors: [3, 4, 5] },
-  { name: '呼吸的红苔（沃土）', floors: [2, 3, 4] },
-  { name: '被歌颂的影子（大狗跳）', floors: [2, 3, 4, 5, 6] },
-  { name: '愈创之心（追忆）', floors: [4] },
-  { name: '临时中介所（临招）', floors: [2, 3, 4, 5] },
-  { name: '和平守卫者（火杆）', floors: [4, 5] },
-  { name: '独活（应急）', floors: [2, 3, 4] }
+  { name: '鸭托邦', alias: '熊本', floors: [3, 4] },
+  { name: '传奇团伙', alias: '鸭本', floors: [4, 5, 6], star: true },
+  { name: '湖中仙女', alias: '仙人跳', floors: [3, 4, 5], star: true },
+  { name: '洞中宝', alias: '挖宝', floors: [3, 4] },
+  { name: '货从口出', alias: '马头', floors: [2, 3, 4, 5, 6] },
+  { name: '沉重的契约', alias: '五火', floors: [2, 3, 4, 5], star: true },
+  { name: '敲动杠杆', alias: '地鼠', floors: [1, 2, 3, 4, 5, 6] },
+  { name: '血衣之下', alias: '剑锤', floors: [2, 3, 4, 5] },
+  { name: '擒与缚', alias: '老鹰', floors: [3, 4, 5, 6] },
+  { name: '黑诞', alias: '追猎图', floors: [3, 4, 5] },
+  { name: '呼吸的红苔', alias: '沃土', floors: [2, 3, 4] },
+  { name: '被歌颂的影子', alias: '大狗跳', floors: [2, 3, 4, 5, 6], star: true },
+  { name: '愈创之心', alias: '追忆', floors: [4], star: true },
+  { name: '临时中介所', alias: '临招', floors: [2, 3, 4, 5] },
+  { name: '和平守卫者', alias: '火杆', floors: [4, 5] },
+  { name: '独活', alias: '应急', floors: [2, 3, 4] }
 ];
 
 const STORAGE_KEY = 'aks-heiliu-shuhai-materials-v1';
@@ -666,6 +696,24 @@ function wireInputs() {
   if (endingReset) endingReset.addEventListener('click', resetEndings);
 }
 
+function wireCalcPanel() {
+  const panel = document.getElementById('calcPanel');
+  const head = document.getElementById('calcHead');
+  const body = document.getElementById('calcBody');
+
+  head.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    head.setAttribute('aria-expanded', String(open));
+    if (open) {
+      body.style.maxHeight = 'none';
+      head.querySelector('.records-arrow').style.transform = 'rotate(90deg)';
+    } else {
+      body.style.maxHeight = '0px';
+      head.querySelector('.records-arrow').style.transform = 'rotate(0deg)';
+    }
+  });
+}
+
 const encState = {};
 let currentEncFloor = 2;
 const encFloorNames = ['第二层', '第三层', '第四层', '第五层', '第六层'];
@@ -703,10 +751,14 @@ function buildEncFloors() {
 
 function buildEncGrid() {
   const grid = document.getElementById('encGrid');
+  // 如果有星，给 label 加上 has-star 类
   grid.innerHTML = encounters.map(enc => `
-    <label class="enc-item ${encState[enc.name] ? 'checked' : ''}" data-name="${enc.name}">
+    <label class="enc-item ${encState[enc.name] ? 'checked' : ''} ${enc.star ? 'has-star' : ''}" data-name="${enc.name}">
       <input type="checkbox" class="enc-check" ${encState[enc.name] ? 'checked' : ''}>
-      <span class="enc-name">${enc.name}</span>
+      <div class="enc-name">
+        <span class="enc-main">${enc.star ? '⭐' : ''}${enc.name}</span>
+        <span class="enc-alias">（${enc.alias}）</span>
+      </div>
     </label>
   `).join('');
 
@@ -715,14 +767,11 @@ function buildEncGrid() {
     const label = e.target.closest('.enc-item');
     const name = label.dataset.name;
     encState[name] = e.target.checked;
-    
-    // 动态切换 checked 类以触发变红
     if (e.target.checked) {
       label.classList.add('checked');
     } else {
       label.classList.remove('checked');
     }
-    
     saveEncState();
     updateEncCount();
   });
@@ -1225,6 +1274,7 @@ function init() {
   buildMaterialRows();
   buildRanking();
   wireInputs();
+  wireCalcPanel();
   
   loadRecords();
   loadEndings();
