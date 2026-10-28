@@ -32,8 +32,8 @@
   --row-hover: #161e16;
   --bar-fill: #2a3a2a;
   --green-fixed: #5cb85c;
-  --red-available: #ff4d4d; /* 普通可遇事件红色 */
-  --gray-disabled: #555555; /* 已勾选深灰 */
+  --red-available: #ff4d4d;
+  --gray-disabled: #555555;
 
   --fs-title: 20px;
   --fs-sub: 10px;
@@ -97,7 +97,7 @@ body {
 .ending-check:checked::before { opacity: 1; }
 
 .calc-inner { padding: 10px 12px 12px; }
-.app-main { display: grid; gap: 10px; align-items: start; }
+.app-main { display: grid; gap: 10px; align-items: start; grid-template-columns: 1fr; }
 .panel { position: relative; background: var(--panel); clip-path: var(--bevel); padding: 12px; border: 1px solid var(--border); }
 .section-title {
   display: flex; align-items: center; gap: 8px; font-family: "Noto Serif SC", "Songti SC", "SimSun", serif; font-size: var(--fs-section); font-weight: 600; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 8px;
@@ -131,8 +131,13 @@ body {
 .shop-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 2px; }
 .shop-label { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-shop-label); color: var(--text); }
 .shop-label::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; background: var(--accent); transform: rotate(45deg); }
-.shop-value { font-size: var(--fs-shop-value); font-weight: 600; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
-.shop-value.neg { color: var(--accent); }
+.shop-value { 
+  font-size: var(--fs-shop-value); font-weight: 600; color: var(--gold); white-space: nowrap; flex-shrink: 0; 
+  cursor: pointer; border-bottom: 1px dashed var(--gold); transition: all 0.15s;
+}
+.shop-value:hover { color: var(--gold-bright); border-bottom-color: var(--gold-bright); text-shadow: 0 0 8px rgba(212, 160, 23, 0.5); }
+.shop-value.neg { color: var(--accent); border-bottom-color: var(--accent); }
+.shop-value.neg:hover { color: #ff4d4d; border-bottom-color: #ff4d4d; text-shadow: 0 0 8px rgba(255, 77, 77, 0.5); }
 
 .mat-actions { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
 .reset-btn {
@@ -152,10 +157,68 @@ body {
 .bar-fill { height: 100%; background: var(--bar-fill); clip-path: var(--bevel); transition: width 300ms ease-out; }
 .bar-row.best .bar-fill { background: var(--accent); }
 .bar-row.best .bar-name { color: var(--gold-bright); }
-.bar-value { width: 40px; flex-shrink: 0; text-align: right; font-size: var(--fs-op-value); font-weight: 600; color: var(--gold); }
+.bar-value { 
+  width: 40px; flex-shrink: 0; text-align: right; font-size: var(--fs-op-value); font-weight: 600; color: var(--gold); 
+  cursor: pointer; border-bottom: 1px dashed var(--gold); transition: all 0.15s;
+}
+.bar-value:hover { color: var(--gold-bright); border-bottom-color: var(--gold-bright); text-shadow: 0 0 8px rgba(212, 160, 23, 0.5); }
 .bar-mark { width: 12px; flex-shrink: 0; color: var(--accent); }
 .best-mark { display: inline-block; animation: blink 2s ease-in-out infinite; }
 .bar-meta { width: 100%; text-align: right; font-size: var(--fs-equiv); color: var(--text-dim); }
+
+.calc-screen {
+  background: var(--bar-track-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 70px;
+}
+.calc-expr {
+  color: var(--text-dim);
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow-x: auto;
+  width: 100%;
+  text-align: right;
+}
+.calc-res {
+  color: var(--gold-bright);
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 4px;
+  min-height: 28px;
+}
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.calc-key {
+  padding: 10px 0;
+  background: var(--border);
+  border: 1px solid var(--border-light);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.calc-key:hover { background: #1f2f1f; border-color: var(--accent); }
+.calc-key:active { background: #233523; transform: scale(0.95); }
+.calc-key.op { color: var(--gold-bright); }
+.calc-key.eq { background: var(--accent); color: #fff; border-color: #a02020; }
+.calc-key.eq:hover { background: #a02020; }
+.calc-key.clear { color: var(--red-available); }
 
 .particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
 .particle { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(150, 205, 160, 0.55), rgba(90, 150, 100, 0.15)); animation: floaty 8s ease-in-out infinite; }
@@ -216,9 +279,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 .chart-wrap { position: relative; height: 170px; padding: 10px 12px 12px; border-top: 1px solid var(--border); }
 .chart-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: var(--fs-equiv); color: var(--text-dim); }
 
-/* ============================================================
-   不期而遇筛选记录（字体适配 + 颜色逻辑）
-   ============================================================ */
 .enc-inner { padding: 10px 12px 12px; }
 .enc-floors { display: flex; gap: 4px; margin-bottom: 10px; }
 .enc-floor-btn { flex: 1 1 0; min-width: 0; padding: 6px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: 12px; font-family: inherit; white-space: nowrap; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
@@ -234,27 +294,22 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 .enc-check::before { content: ""; position: absolute; left: 5px; top: 1px; width: 6px; height: 11px; border-right: 2px solid var(--gold-bright); border-bottom: 2px solid var(--gold-bright); transform: rotate(45deg); opacity: 0; transition: opacity 0.15s; }
 .enc-check:checked::before { opacity: 1; }
 
-/* 给文字区设置最小高度，防止因单行长字折行导致整体网格高低不齐 */
 .enc-name { display: flex; flex-direction: column; align-items: center; line-height: 1.2; word-break: break-all; transition: color 0.15s; min-height: 44px; justify-content: flex-start; }
-.enc-main { font-size: 20px; font-weight: 500; color: var(--text); }
-.enc-alias { font-size: 15px; color: var(--text-dim); margin-top: 2px; }
+.enc-main { font-size: 16px; font-weight: 500; color: var(--text); }
+.enc-alias { font-size: 14px; color: var(--text-dim); margin-top: 2px; }
 
-/* 1. 当前层可遇（普通）：红色 */
 .enc-item.available .enc-main { color: var(--red-available); }
 .enc-item.available .enc-alias { color: #cc3333; }
 
-/* 2. 当前层可遇（带星星）：金色（优先级高于普通可遇） */
 .enc-item.available.has-star .enc-main { color: var(--gold-bright); }
 .enc-item.available.has-star .enc-alias { color: var(--gold); }
 
-/* 3. 勾选状态：变深灰 + 删除线（排除马头，优先级最高） */
 .enc-item.checked:not([data-name="货从口出"]) .enc-main,
 .enc-item.checked:not([data-name="货从口出"]) .enc-alias {
   color: var(--gray-disabled) !important;
   text-decoration: line-through;
 }
 
-/* 4. 马头固定绿色（最高优先级，无视可遇/勾选状态） */
 .enc-item[data-name="货从口出"] .enc-main { color: var(--green-fixed) !important; }
 .enc-item[data-name="货从口出"] .enc-alias { color: var(--green-fixed) !important; }
 
@@ -263,18 +318,62 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 .enc-reset:hover { border-color: var(--accent); color: var(--text); background: #1f2f1f; }
 .enc-reset:active { border-color: var(--accent); background: #233523; }
 
+.tools-inner { padding: 10px 12px 12px; }
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  .tools-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: var(--bar-track-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.tool-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.tool-btn.tool-bili { color: #FB7299; border-color: rgba(251, 114, 153, 0.3); }
+.tool-btn.tool-bili:hover { border-color: #FB7299; background: rgba(251, 114, 153, 0.1); }
+.tool-btn.tool-prts { color: #79B2CF; border-color: rgba(121, 178, 207, 0.3); }
+.tool-btn.tool-prts:hover { border-color: #79B2CF; background: rgba(121, 178, 207, 0.1); }
+.tool-btn.tool-tomimi { color: var(--gold-bright); border-color: rgba(212, 160, 23, 0.3); }
+.tool-btn.tool-tomimi:hover { border-color: var(--gold-bright); background: rgba(212, 160, 23, 0.1); }
+.tool-btn.tool-road { color: #00BFFF; border-color: rgba(0, 191, 255, 0.3); }
+.tool-btn.tool-road:hover { border-color: #00BFFF; background: rgba(0, 191, 255, 0.1); }
+.tool-btn::after {
+  content: "↗";
+  font-size: 12px;
+  opacity: 0.7;
+  font-family: sans-serif;
+}
+
 .install-fab { position: fixed; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; background: var(--accent); color: #f4ead6; border: 1px solid var(--gold); border-radius: 999px; font-family: inherit; font-size: 13px; letter-spacing: 0.06em; cursor: pointer; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); transition: transform 0.15s, filter 0.15s; }
 .install-fab:hover { filter: brightness(1.12); }
 .install-fab:active { transform: scale(0.96); }
 .install-fab[hidden] { display: none; }
 .install-fab svg { display: block; }
 
-@media (min-width: 768px) { .app-main { grid-template-columns: 300px 1fr; } }
+@media (min-width: 768px) {
+  .app-main { grid-template-columns: 260px 1fr 240px; }
+}
 @media (min-width: 1024px) {
   :root {
     --fs-title: 21px; --fs-sub: 11px; --fs-section: 14px; --fs-mat-name: 14px; --fs-mat-desc: 11px; --fs-input: 17px; --fs-op-name: 13px; --fs-op-value: 16px; --fs-equiv: 11px; --fs-shop-label: 13px; --fs-shop-value: 16px;
   }
-  .app-main { grid-template-columns: 340px 1fr; }
+  .app-main { grid-template-columns: 300px 1fr 260px; }
 }
 @media (max-width: 767px) {
   .ending-box { width: 100%; justify-content: flex-end; gap: 14px; padding-top: 4px; }
@@ -282,10 +381,6 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   .ending-check { width: 20px; height: 20px; }
   .ending-check::before { left: 5px; top: 2px; width: 7px; height: 12px; }
   .ending-reset { width: 24px; height: 24px; }
-  
-  /* 手机端字号微调，尽量保证一行放得下 */
-  .enc-main { font-size: 15.5px; letter-spacing: -0.5px; }
-  .enc-alias { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -341,12 +436,12 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   <span class="particle p6"></span>
 </div>
 
-<section class="records-panel open" id="calcPanel" aria-label="作战自然物增值排序" style="margin-top: 10px;">
-  <button type="button" class="records-head" id="calcHead" aria-expanded="true">
+<section class="records-panel" id="calcPanel" aria-label="作战自然物增值排序" style="margin-top: 10px;">
+  <button type="button" class="records-head" id="calcHead" aria-expanded="false">
     <span class="records-title">作战自然物增值排序</span>
-    <span class="records-arrow" aria-hidden="true" style="transform: rotate(90deg);">▸</span>
+    <span class="records-arrow" aria-hidden="true" style="transform: rotate(0deg);">▸</span>
   </button>
-  <div class="records-body" id="calcBody" style="max-height: none;">
+  <div class="records-body" id="calcBody" style="max-height: 0;">
     <div class="calc-inner">
       <main class="app-main">
         <div class="panel" aria-label="自然物库存">
@@ -355,27 +450,81 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
             <button type="button" class="reset-btn" id="resetBtn">重置</button>
           </div>
         </div>
+        
         <div class="panel rank-panel" aria-label="作战增值排序">
           <h2 class="section-title">作战增值排序</h2>
           <div id="rankList" class="rank-list"></div>
+        </div>
+
+        <div class="panel calc-panel" aria-label="简易计算器">
+          <h2 class="section-title">计算器</h2>
+          <div class="calc-screen" id="calcScreen">
+            <div class="calc-expr" id="calcExpr">0</div>
+            <div class="calc-res" id="calcRes"></div>
+          </div>
+          <div class="calc-keys">
+            <button class="calc-key clear" data-val="C">C</button>
+            <button class="calc-key clear" data-val="←">←</button>
+            <button class="calc-key op" data-val="(">(</button>
+            <button class="calc-key op" data-val=")">)</button>
+            <button class="calc-key op" data-val="/">÷</button>
+
+            <button class="calc-key" data-val="7">7</button>
+            <button class="calc-key" data-val="8">8</button>
+            <button class="calc-key" data-val="9">9</button>
+            <button class="calc-key op" data-val="*">×</button>
+            <button class="calc-key eq" data-val="=" style="grid-column: 5; grid-row: 2 / span 4;">=</button>
+
+            <button class="calc-key" data-val="4">4</button>
+            <button class="calc-key" data-val="5">5</button>
+            <button class="calc-key" data-val="6">6</button>
+            <button class="calc-key op" data-val="-">-</button>
+
+            <button class="calc-key" data-val="1">1</button>
+            <button class="calc-key" data-val="2">2</button>
+            <button class="calc-key" data-val="3">3</button>
+            <button class="calc-key op" data-val="+">+</button>
+
+            <button class="calc-key" data-val="0" style="grid-column: span 2;">0</button>
+            <button class="calc-key" data-val=".">.</button>
+            <button class="calc-key op" data-val="%">%</button>
+          </div>
         </div>
       </main>
     </div>
   </div>
 </section>
 
-<section class="records-panel" id="encPanel" aria-label="不期而遇筛选记录">
-  <button type="button" class="records-head" id="encHead" aria-expanded="false">
+<section class="records-panel open" id="encPanel" aria-label="不期而遇筛选记录">
+  <button type="button" class="records-head" id="encHead" aria-expanded="true">
     <span class="records-title">不期而遇筛选记录</span>
-    <span class="records-avg" id="encCount">已勾选：<b>0</b></span>
-    <span class="records-arrow" aria-hidden="true">▸</span>
+    <!-- 修改为优质概率 -->
+    <span class="records-avg" id="encProb">优质事件概率：<b>--</b></span>
+    <span class="records-arrow" aria-hidden="true" style="transform: rotate(90deg);">▸</span>
   </button>
-  <div class="records-body" id="encBody">
+  <div class="records-body" id="encBody" style="max-height: none;">
     <div class="enc-inner">
       <div class="enc-floors" id="encFloors" role="group" aria-label="选择层数"></div>
       <div class="enc-grid" id="encGrid"></div>
       <div class="enc-actions">
         <button type="button" class="enc-reset" id="encResetBtn">重置勾选</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="records-panel" id="toolsPanel" aria-label="集批助力网站汇总">
+  <button type="button" class="records-head" id="toolsHead" aria-expanded="false">
+    <span class="records-title">集批助力网站汇总</span>
+    <span class="records-arrow" aria-hidden="true">▸</span>
+  </button>
+  <div class="records-body" id="toolsBody">
+    <div class="tools-inner">
+      <div class="tools-grid">
+        <a href="https://www.bilibili.com" target="_blank" rel="noopener noreferrer" class="tool-btn tool-bili">哔哩哔哩</a>
+        <a href="https://prts.wiki" target="_blank" rel="noopener noreferrer" class="tool-btn tool-prts">PRTS</a>
+        <a href="https://tomimi.dev" target="_blank" rel="noopener noreferrer" class="tool-btn tool-tomimi">tomimi</a>
+        <a href="https://www.lubiao.wiki/" target="_blank" rel="noopener noreferrer" class="tool-btn tool-road">路标档案馆</a>
       </div>
     </div>
   </div>
@@ -405,6 +554,64 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 <noscript><p style="text-align:center;padding:24px;color:#6a7a6a;">本工具需要启用 JavaScript 才能计算。</p></noscript>
 
 <script>
+/* ================= 简易计算器逻辑 ================= */
+const calcExprEl = document.getElementById('calcExpr');
+const calcResEl = document.getElementById('calcRes');
+let calcExpression = '';
+
+function appendToCalculator(numStr) {
+  let val = String(numStr);
+  if (val === '0') return;
+  
+  if (calcExpression === '' || calcExpression === '0') {
+    calcExpression = val;
+  } else {
+    const lastChar = calcExpression.slice(-1);
+    if (['+', '-', '×', '÷', '('].includes(lastChar)) {
+      calcExpression += val;
+    } else {
+      if (val.startsWith('-')) {
+        calcExpression += val; 
+      } else {
+        calcExpression += '+' + val;
+      }
+    }
+  }
+  calcExprEl.textContent = calcExpression;
+  calcResEl.textContent = '';
+}
+
+document.querySelectorAll('.calc-key').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = btn.dataset.val;
+    if (val === 'C') {
+      calcExpression = ''; calcExprEl.textContent = '0'; calcResEl.textContent = '';
+    } else if (val === '←') {
+      calcExpression = calcExpression.slice(0, -1); calcExprEl.textContent = calcExpression || '0'; calcResEl.textContent = '';
+    } else if (val === '=') {
+      if (!calcExpression) return;
+      let jsExpr = calcExpression.replace(/×/g, '*').replace(/÷/g, '/');
+      if (!/^[0-9+\-*/().% ]+$/.test(jsExpr)) { calcResEl.textContent = '格式错误'; return; }
+      try {
+        let result = new Function('return ' + jsExpr)();
+        if (typeof result === 'number') { result = Math.round(result * 100000000) / 100000000; }
+        calcResEl.textContent = '= ' + result;
+      } catch (e) { calcResEl.textContent = '语法错误'; }
+    } else {
+      if (calcExpression === '' && ['+', '*', '/', ')', '%'].includes(val)) return;
+      const lastChar = calcExpression.slice(-1);
+      if (['+', '-', '×', '÷', '%'].includes(lastChar) && ['+', '×', '÷', '%'].includes(val)) {
+          calcExpression = calcExpression.slice(0, -1) + val;
+      } else {
+          calcExpression += val;
+      }
+      calcExprEl.textContent = calcExpression;
+      calcResEl.textContent = ''; 
+    }
+  });
+});
+/* =================================================== */
+
 const materials = [
   { id: 'corn',  name: '回声玉米', emoji: '🌽', desc: '每次招募干员时估价 +3', recruitBonus: 3, partsBonus: 0, battleBonus: 0 },
   { id: 'heartgrass', name: '恋心草', emoji: '🔥', desc: '每次作战后估价 +6', recruitBonus: 0, partsBonus: 0, battleBonus: 6 },
@@ -422,24 +629,25 @@ const operations = [
   { id: 'outpost',  name: '居民据点', recruitCount: 1, partsCount: 2 }
 ];
 
-// 包含 star 属性，用于标记重要事件
 const encounters = [
-  { name: '鸭托邦', alias: '熊本', floors: [3, 4] },
-  { name: '传奇团伙', alias: '鸭本', floors: [4, 5, 6], star: true },
+  { name: '愈创之心', alias: '追忆', floors: [4], star: true },
   { name: '湖中仙女', alias: '仙人跳', floors: [3, 4, 5], star: true },
-  { name: '洞中宝', alias: '挖宝', floors: [3, 4] },
-  { name: '货从口出', alias: '马头', floors: [2, 3, 4, 5, 6] },
   { name: '沉重的契约', alias: '五火', floors: [2, 3, 4, 5], star: true },
+  { name: '传奇团伙', alias: '鸭本', floors: [4, 5, 6], star: true },
+
   { name: '敲动杠杆', alias: '地鼠', floors: [1, 2, 3, 4, 5, 6] },
-  { name: '血衣之下', alias: '剑锤', floors: [2, 3, 4, 5] },
+  { name: '被歌颂的影子', alias: '大狗跳', floors: [2, 3, 4, 5, 6] },
   { name: '擒与缚', alias: '老鹰', floors: [3, 4, 5, 6] },
+  { name: '血衣之下', alias: '剑锤', floors: [2, 3, 4, 5] },
+  { name: '临时中介所', alias: '临招', floors: [2, 3, 4, 5] },
   { name: '黑诞', alias: '追猎图', floors: [3, 4, 5] },
   { name: '呼吸的红苔', alias: '沃土', floors: [2, 3, 4] },
-  { name: '被歌颂的影子', alias: '大狗跳', floors: [2, 3, 4, 5, 6], star: true },
-  { name: '愈创之心', alias: '追忆', floors: [4], star: true },
-  { name: '临时中介所', alias: '临招', floors: [2, 3, 4, 5] },
+  { name: '独活', alias: '应急', floors: [2, 3, 4] },
+  { name: '鸭托邦', alias: '熊本', floors: [3, 4] },
+  { name: '洞中宝', alias: '挖宝', floors: [3, 4] },
   { name: '和平守卫者', alias: '火杆', floors: [4, 5] },
-  { name: '独活', alias: '应急', floors: [2, 3, 4] }
+
+  { name: '货从口出', alias: '马头', floors: [2, 3, 4, 5, 6] }
 ];
 
 const STORAGE_KEY = 'aks-heiliu-shuhai-materials-v1';
@@ -519,7 +727,7 @@ function buildMaterialRows() {
       shop.className = 'shop-row';
       shop.innerHTML = `
         <span class="shop-label">商店招募券净增值：玉米数量 × 3 - 4</span>
-        <span class="shop-value" id="shopNet">0</span>`;
+        <span class="shop-value" id="shopNet" title="点击导入计算器">0</span>`;
       list.appendChild(shop);
     }
   });
@@ -536,7 +744,7 @@ function buildRanking() {
     row.innerHTML = `
       <div class="bar-name"><span>${op.name}</span><span class="best-emoji" aria-hidden="true">😍</span></div>
       <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-      <div class="bar-value">0</div>
+      <div class="bar-value" title="点击导入计算器">0</div>
       <div class="bar-mark"></div>
       <div class="bar-meta"><span>≈ 0.0 收藏品</span></div>`;
     list.appendChild(row);
@@ -548,6 +756,12 @@ function buildRanking() {
       metaEl: row.querySelector('.bar-meta'),
       emojiEl: row.querySelector('.best-emoji')
     });
+  });
+
+  list.addEventListener('click', (e) => {
+    if (e.target.classList.contains('bar-value')) {
+      appendToCalculator(e.target.textContent);
+    }
   });
 }
 
@@ -692,6 +906,11 @@ function wireInputs() {
     render();
   };
   document.getElementById('resetBtn').addEventListener('click', resetMaterials);
+  
+  document.getElementById('shopNet').addEventListener('click', function() {
+    appendToCalculator(this.textContent);
+  });
+
   const endingReset = document.getElementById('endingResetBtn');
   if (endingReset) endingReset.addEventListener('click', resetEndings);
 }
@@ -751,7 +970,6 @@ function buildEncFloors() {
 
 function buildEncGrid() {
   const grid = document.getElementById('encGrid');
-  // 如果有星，给 label 加上 has-star 类
   grid.innerHTML = encounters.map(enc => `
     <label class="enc-item ${encState[enc.name] ? 'checked' : ''} ${enc.star ? 'has-star' : ''}" data-name="${enc.name}">
       <input type="checkbox" class="enc-check" ${encState[enc.name] ? 'checked' : ''}>
@@ -773,10 +991,11 @@ function buildEncGrid() {
       label.classList.remove('checked');
     }
     saveEncState();
-    updateEncCount();
+    updateEncProbability();
   });
 
   updateEncGridHighlights();
+  updateEncProbability();
 }
 
 function updateEncGridHighlights() {
@@ -789,11 +1008,27 @@ function updateEncGridHighlights() {
       item.classList.remove('available');
     }
   });
+  // 切换层数时，同步更新概率
+  updateEncProbability();
 }
 
-function updateEncCount() {
-  const count = Object.values(encState).filter(v => v).length;
-  document.getElementById('encCount').innerHTML = `已勾选：<b>${count}</b>`;
+// 核心功能：计算当前层优质事件的概率
+function updateEncProbability() {
+  // 获取当前层所有事件，并排除“货从口出（马头）”，因为它是无限次可遇的
+  const floorEvents = encounters.filter(e => e.floors.includes(currentEncFloor) && e.name !== '货从口出');
+  // 过滤出还未勾选的事件（剩余可能遇到的事件）
+  const remainEvents = floorEvents.filter(e => !encState[e.name]);
+  // 过滤出未勾选的优质事件（带 star 属性）
+  const remainGood = remainEvents.filter(e => e.star);
+
+  const probEl = document.getElementById('encProb');
+  if (remainEvents.length === 0) {
+    // 除了马头全遇到了，概率算作 0% 或 --（这里用 -- 表示无意义）
+    probEl.innerHTML = `优质事件概率：<b>--</b>`;
+  } else {
+    const prob = Math.round((remainGood.length / remainEvents.length) * 100);
+    probEl.innerHTML = `优质事件概率：<b>${prob}%</b>`;
+  }
 }
 
 function wireEncPanel() {
@@ -818,7 +1053,25 @@ function wireEncPanel() {
     saveEncState();
     document.querySelectorAll('.enc-check').forEach(cb => cb.checked = false);
     document.querySelectorAll('.enc-item').forEach(item => item.classList.remove('checked'));
-    updateEncCount();
+    updateEncProbability();
+  });
+}
+
+function wireToolsPanel() {
+  const panel = document.getElementById('toolsPanel');
+  const head = document.getElementById('toolsHead');
+  const body = document.getElementById('toolsBody');
+
+  head.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    head.setAttribute('aria-expanded', String(open));
+    body.style.maxHeight = open ? (body.scrollHeight + 'px') : '0px';
+  });
+
+  window.addEventListener('resize', () => {
+    if (panel.classList.contains('open')) {
+      body.style.maxHeight = body.scrollHeight + 'px';
+    }
   });
 }
 
@@ -1287,8 +1540,17 @@ function init() {
   buildEncFloors();
   buildEncGrid();
   wireEncPanel();
-  updateEncCount();
   
+  wireToolsPanel();
+  
+  const encPanel = document.getElementById('encPanel');
+  if (encPanel.classList.contains('open')) {
+    const encBody = document.getElementById('encBody');
+    setTimeout(() => {
+      encBody.style.maxHeight = encBody.scrollHeight + 'px';
+    }, 100);
+  }
+
   initAuth();
 
   document.querySelectorAll('.mat-row').forEach(row => {
