@@ -18,9 +18,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
-/* ================= 主题变量（暗黑 & 明亮） ================= */
+/* ================= 主题变量 ================= */
 :root {
-  /* 默认：黑流树海（暗黑） */
   --bg: #0a0d0a;
   --bg-gradient-1: rgba(139, 26, 26, 0.10);
   --bg-gradient-2: rgba(26, 58, 26, 0.10);
@@ -57,7 +56,6 @@
   --bevel: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
 
-/* 明亮主题变量覆盖 */
 [data-theme="light"] {
   --bg: #f0f2ef;
   --bg-gradient-1: rgba(139, 26, 26, 0.03);
@@ -98,6 +96,40 @@ body {
 }
 ::selection { background: rgba(139, 26, 26, 0.2); }
 
+/* ================= 全局按钮样式强化 ================= */
+/* 主操作：金色 */
+.btn-primary-style {
+  background: rgba(212, 160, 23, 0.1) !important;
+  border-color: var(--gold-bright) !important;
+  color: var(--gold-bright) !important;
+}
+.btn-primary-style:hover {
+  background: rgba(212, 160, 23, 0.2) !important;
+}
+/* 危险操作：红色 */
+.btn-danger-style {
+  background: transparent !important;
+  border-color: rgba(139, 26, 26, 0.6) !important;
+  color: var(--red-available) !important;
+}
+.btn-danger-style:hover {
+  background: rgba(139, 26, 26, 0.2) !important;
+  border-color: var(--red-available) !important;
+}
+/* 次要操作：亮白/明确 */
+.btn-normal-style {
+  background: transparent !important;
+  border-color: var(--border-light) !important;
+  color: #ffffff !important;
+}
+[data-theme="light"] .btn-normal-style {
+  color: #333333 !important;
+}
+.btn-normal-style:hover {
+  border-color: var(--text-dim) !important;
+  background: var(--row-hover) !important;
+}
+
 .app-header { border-bottom: 1px solid var(--border); background: var(--header-bg); transition: background 0.3s, border-color 0.3s; }
 .header-inner {
   max-width: 1120px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; padding: 12px 16px 9px;
@@ -108,7 +140,6 @@ body {
 }
 .app-sub { font-size: var(--fs-sub); color: var(--text-dim); letter-spacing: 0.08em; margin-top: 1px; }
 
-/* 顶部右侧操作区 */
 .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; padding-top: 2px; }
 .theme-btn {
   background: transparent; border: 1px solid var(--border-light); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-dim); transition: all 0.2s;
@@ -137,7 +168,8 @@ body {
 .ending-check:checked::before { opacity: 1; }
 
 .calc-inner { padding: 10px 12px 12px; }
-.app-main { display: grid; gap: 10px; align-items: start; grid-template-columns: 1fr; }
+.app-main { display: grid; gap: 10px; align-items: stretch; grid-template-columns: 1fr; }
+.middle-col { display: flex; flex-direction: column; gap: 10px; }
 .panel { position: relative; background: var(--panel); clip-path: var(--bevel); padding: 12px; border: 1px solid var(--border); transition: background 0.3s, border-color 0.3s; }
 .section-title {
   display: flex; align-items: center; gap: 8px; font-family: "Noto Serif SC", "Songti SC", "SimSun", serif; font-size: var(--fs-section); font-weight: 600; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 8px;
@@ -182,7 +214,6 @@ body {
 .reset-btn {
   width: 100%; padding: 8px 0; background: transparent; border: 1px solid var(--border-light); color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; letter-spacing: 0.12em; cursor: pointer; transition: all 0.15s;
 }
-.reset-btn:hover { border-color: var(--accent); color: var(--text); background: var(--row-hover); }
 
 .rank-list { display: flex; flex-direction: column; }
 .bar-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 1px; padding: 3px 6px; transition: background 0.2s; }
@@ -207,82 +238,34 @@ body {
 /* 便签面板 */
 .memo-panel { display: flex; flex-direction: column; flex: 1; }
 .memo-title {
-  font-size: 11px;
-  color: var(--text-dim);
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  font-size: 11px; color: var(--text-dim); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+}
+.memo-switch-btn {
+  background: transparent; border: 1px solid var(--border-light); border-radius: 4px; color: var(--text-dim); cursor: pointer; font-size: 11px; padding: 2px 6px; transition: all 0.15s;
 }
 .memo-clear {
-  background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 11px;
-  transition: color 0.15s;
+  background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 11px; transition: color 0.15s;
 }
 .memo-clear:hover { color: var(--red-available); }
 .memo-textarea {
-  width: 100%;
-  min-height: 120px;
-  flex: 1;
-  background: var(--bar-track-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  padding: 8px;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 13px;
-  line-height: 1.5;
-  resize: vertical;
-  transition: all 0.15s;
+  width: 100%; flex: 1; min-height: 150px; background: var(--bar-track-bg); border: 1px solid var(--border-light); border-radius: 6px; padding: 8px; color: var(--text); font-family: inherit; font-size: 13px; line-height: 1.5; resize: vertical; transition: all 0.15s;
 }
 .memo-textarea:focus { outline: none; border-color: var(--accent); }
 
-.calc-panel { display: flex; flex-direction: column; }
+/* 计算器面板 */
+.calc-panel { display: flex; flex-direction: column; flex: 1; }
 .calc-screen {
-  background: var(--bar-track-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  min-height: 70px;
+  background: var(--bar-track-bg); border: 1px solid var(--border-light); border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; min-height: 70px;
 }
 .calc-expr {
-  color: var(--text-dim);
-  font-family: "SF Mono", Consolas, monospace;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow-x: auto;
-  width: 100%;
-  text-align: right;
+  width: 100%; background: transparent; border: none; color: var(--text-dim); font-family: "SF Mono", Consolas, monospace; font-size: 14px; text-align: right; outline: none;
 }
 .calc-res {
-  color: var(--gold-bright);
-  font-family: "SF Mono", Consolas, monospace;
-  font-size: 22px;
-  font-weight: 700;
-  margin-top: 4px;
-  min-height: 28px;
+  color: var(--gold-bright); font-family: "SF Mono", Consolas, monospace; font-size: 22px; font-weight: 700; margin-top: 4px; min-height: 28px;
 }
-.calc-keys {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
+.calc-keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .calc-key {
-  padding: 10px 0;
-  background: var(--border);
-  border: 1px solid var(--border-light);
-  color: var(--text);
-  font-size: 15px;
-  font-family: inherit;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-  user-select: none;
-  -webkit-user-select: none;
+  padding: 10px 0; background: var(--border); border: 1px solid var(--border-light); color: var(--text); font-size: 15px; font-family: inherit; border-radius: 6px; cursor: pointer; transition: all 0.15s; user-select: none; -webkit-user-select: none;
 }
 .calc-key:hover { background: var(--row-hover); border-color: var(--accent); }
 .calc-key:active { background: var(--row-hover); transform: scale(0.95); }
@@ -291,47 +274,51 @@ body {
 .calc-key.eq:hover { background: var(--red-available); border-color: var(--red-available); }
 .calc-key.clear { color: var(--red-available); }
 
-.calc-history-box {
-  margin-top: 12px;
-  border-top: 1px dashed var(--border-light);
-  padding-top: 8px;
-}
-.history-title {
-  font-size: 11px;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: space-between;
-}
-.history-list {
-  max-height: 100px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+/* 历史记录 */
+.calc-history-box { margin-top: 12px; border-top: 1px dashed var(--border-light); padding-top: 8px; flex: 1; display: flex; flex-direction: column; }
+.history-title { font-size: 11px; color: var(--text-dim); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.history-list { max-height: 96px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .history-list::-webkit-scrollbar { width: 4px; }
 .history-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 .history-item {
-  font-size: 13px;
-  color: var(--text-dim);
-  padding: 4px 8px;
-  background: var(--bar-track-bg);
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: right;
-  transition: all 0.15s;
-  font-family: "SF Mono", Consolas, monospace;
-  display: flex;
-  justify-content: space-between;
+  font-size: 13px; color: var(--text-dim); padding: 4px 8px; background: var(--bar-track-bg); border-radius: 4px; cursor: pointer; transition: all 0.15s; font-family: "SF Mono", Consolas, monospace; display: flex; justify-content: space-between; gap: 4px;
 }
-.history-item:hover {
-  background: rgba(212, 160, 23, 0.1);
-  color: var(--gold-bright);
-}
-.history-expr { color: var(--text-dim); }
-.history-res { color: var(--gold); font-weight: bold; }
+.history-item:hover { background: rgba(212, 160, 23, 0.1); color: var(--gold-bright); }
+.history-expr { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left; }
+.history-res { color: var(--gold); font-weight: bold; flex-shrink: 0; }
 
+/* 地图规划器 */
+.map-inner { padding: 10px 12px 12px; }
+.map-toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.map-btn {
+  background: transparent; border: 1px solid var(--border-light); color: var(--text); padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+}
+.map-btn.active { background: rgba(212, 160, 23, 0.25) !important; border-color: var(--gold-bright) !important; color: var(--gold-bright) !important; }
+.map-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+input[type="file"].map-upload { display: none; }
+
+.map-canvas-container {
+  position: relative; width: 100%; aspect-ratio: 16 / 10; background: var(--bar-track-bg); border: 1px dashed var(--border-light); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 20px 20px;
+}
+.map-board { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+.map-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.map-draw-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+.map-board.draw-mode .map-draw-canvas { pointer-events: auto; cursor: crosshair; }
+.map-board.draw-mode .map-text-node { pointer-events: none; opacity: 0.7; }
+.map-empty-tip { color: var(--text-dim); font-size: 13px; text-align: center; }
+.map-text-node {
+  position: absolute; background: rgba(18, 24, 18, 0.85); border: 1px solid var(--gold-bright); border-radius: 4px; padding: 4px 8px; color: #fff; font-size: 13px; min-width: 60px; cursor: move; user-select: none; white-space: pre-wrap; word-break: break-all; box-shadow: 0 4px 10px rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 10;
+}
+.map-text-node:hover { box-shadow: 0 0 12px rgba(212, 160, 23, 0.4); }
+.map-text-node.dragging { opacity: 0.9; cursor: grabbing; z-index: 999; }
+.map-text-node[contenteditable="true"] { cursor: text; background: rgba(0, 0, 0, 0.9); border-color: #fff; outline: none; }
+.map-del-btn {
+  position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; opacity: 0; transition: opacity 0.2s; line-height: 1;
+}
+.map-text-node:hover .map-del-btn { opacity: 1; }
+.map-del-btn:hover { background: #ff4d4d; }
+
+/* 其他通用 */
 .particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.6; }
 [data-theme="light"] .particles { opacity: 0.2; }
 .particle { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(150, 205, 160, 0.55), rgba(90, 150, 100, 0.15)); animation: floaty 8s ease-in-out infinite; }
@@ -375,9 +362,7 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 .records-empty.show { display: block; }
 .records-actions { display: flex; gap: 8px; padding: 8px 12px 12px; border-top: 1px solid var(--border); }
 .records-add { flex: 1; padding: 7px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text); font-size: var(--fs-shop-label); font-family: inherit; cursor: pointer; transition: all 0.15s; }
-.records-add:hover { border-color: var(--accent); background: var(--row-hover); }
 .records-clear { padding: 7px 12px; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; white-space: nowrap; cursor: pointer; transition: all 0.15s; }
-.records-clear:hover { border-color: var(--accent); color: var(--text); background: var(--row-hover); }
 
 .auth-box { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--border); background: var(--row-hover); }
 .auth-input { flex: 1 1 110px; min-width: 0; background: var(--bar-track-bg); border: 1px solid var(--border-light); border-radius: 6px; color: var(--text); font-size: var(--fs-op-name); font-family: inherit; padding: 6px 8px; }
@@ -413,50 +398,24 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 
 .enc-item.available .enc-main { color: var(--red-available); }
 .enc-item.available .enc-alias { color: var(--accent); }
-
 .enc-item.available.has-star .enc-main { color: var(--gold-bright); }
 .enc-item.available.has-star .enc-alias { color: var(--gold); }
-
 .enc-item.checked:not([data-name="货从口出"]) .enc-main,
 .enc-item.checked:not([data-name="货从口出"]) .enc-alias {
   color: var(--gray-disabled) !important;
   text-decoration: line-through;
 }
-
 .enc-item[data-name="货从口出"] .enc-main { color: var(--green-fixed) !important; }
 .enc-item[data-name="货从口出"] .enc-alias { color: var(--green-fixed) !important; }
 
 .enc-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--border); }
 .enc-reset { flex: 1; padding: 8px 0; background: transparent; border: 1px solid var(--border-light); border-radius: 6px; color: var(--text-dim); font-size: var(--fs-shop-label); font-family: inherit; letter-spacing: 0.08em; cursor: pointer; transition: all 0.15s; }
-.enc-reset:hover { border-color: var(--accent); color: var(--text); background: var(--row-hover); }
 
 .tools-inner { padding: 10px 12px 12px; }
-.tools-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-@media (min-width: 768px) {
-  .tools-grid { grid-template-columns: repeat(4, 1fr); }
-}
-.tool-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
-  background: var(--bar-track-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-.tool-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow);
-}
+.tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 768px) { .tools-grid { grid-template-columns: repeat(4, 1fr); } }
+.tool-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 8px; background: var(--bar-track-bg); border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; }
+.tool-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
 .tool-btn.tool-bili { color: #FB7299; border-color: rgba(251, 114, 153, 0.3); }
 .tool-btn.tool-bili:hover { border-color: #FB7299; background: rgba(251, 114, 153, 0.1); }
 .tool-btn.tool-prts { color: #79B2CF; border-color: rgba(121, 178, 207, 0.3); }
@@ -465,12 +424,7 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
 .tool-btn.tool-tomimi:hover { border-color: var(--gold-bright); background: rgba(212, 160, 23, 0.1); }
 .tool-btn.tool-road { color: #00BFFF; border-color: rgba(0, 191, 255, 0.3); }
 .tool-btn.tool-road:hover { border-color: #00BFFF; background: rgba(0, 191, 255, 0.1); }
-.tool-btn::after {
-  content: "↗";
-  font-size: 12px;
-  opacity: 0.7;
-  font-family: sans-serif;
-}
+.tool-btn::after { content: "↗"; font-size: 12px; opacity: 0.7; font-family: sans-serif; }
 
 .install-fab { position: fixed; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; background: var(--accent); color: #fff; border: 1px solid var(--gold); border-radius: 999px; font-family: inherit; font-size: 13px; letter-spacing: 0.06em; cursor: pointer; box-shadow: 0 6px 18px var(--shadow); transition: transform 0.15s, filter 0.15s; }
 .install-fab:hover { filter: brightness(1.12); }
@@ -509,14 +463,10 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
       <h1 class="app-title">军藏思维计算仪</h1>
       <p class="app-sub">沉沦者的黑流树海 · 自然物增值推演</p>
     </div>
-    
-    <!-- 右侧操作区：主题切换 + 结局藏品 -->
     <div class="header-actions">
       <button type="button" class="theme-btn" id="themeToggleBtn" title="切换主题">
-        <!-- 太阳/月亮图标由 JS 动态替换 -->
         <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
       </button>
-
       <div class="ending-box" id="endingBox">
         <label class="ending-label lb-a">
           <input type="checkbox" class="ending-check" id="endingAlpha" aria-label="沙盘α">
@@ -530,7 +480,8 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
           <input type="checkbox" class="ending-check" id="endingBeacon" aria-label="怦然信标">
           <span>怦然信标</span>
         </label>
-        <button type="button" class="ending-reset" id="endingResetBtn" aria-label="重置结局藏品勾选">
+        <!-- 危险操作：红色 -->
+        <button type="button" class="ending-reset btn-danger-style" id="endingResetBtn" aria-label="重置结局藏品勾选">
           <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
             <path d="M20 11a8 8 0 1 0-2.34 5.66" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
             <path d="M20 5.5V11h-5.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -569,7 +520,8 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
         <div class="panel" aria-label="自然物库存">
           <div id="matList" class="mat-list"></div>
           <div class="mat-actions">
-            <button type="button" class="reset-btn" id="resetBtn">重置</button>
+            <!-- 危险操作：红色 -->
+            <button type="button" class="reset-btn btn-danger-style" id="resetBtn">重置</button>
           </div>
         </div>
         
@@ -581,17 +533,20 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
           <!-- 便签面板 -->
           <div class="panel memo-panel" aria-label="简易便签">
             <div class="memo-title">
-              <span class="section-title" style="margin-bottom:0">简易便签</span>
-              <button class="memo-clear" id="memoClearBtn">清空</button>
+              <span class="section-title" style="margin-bottom:0" id="memoTitle">简易便签</span>
+              <div style="display:flex; gap:6px;">
+                <button class="memo-switch-btn btn-normal-style" id="memoSwitchBtn">切换</button>
+                <button class="memo-clear btn-danger-style" style="border:1px solid transparent; border-radius:4px; padding:2px 6px;" id="memoClearBtn">清空</button>
+              </div>
             </div>
-            <textarea class="memo-textarea" id="memoText" placeholder="记点什么（下一层抓什么、留多少钱等）..."></textarea>
+            <textarea class="memo-textarea" id="memoText" placeholder="记点什么..."></textarea>
           </div>
         </div>
 
         <div class="panel calc-panel" aria-label="简易计算器">
           <h2 class="section-title">计算器</h2>
           <div class="calc-screen" id="calcScreen">
-            <div class="calc-expr" id="calcExpr">0</div>
+            <input class="calc-expr" id="calcExpr" type="text" value="0" readonly placeholder="0">
             <div class="calc-res" id="calcRes"></div>
           </div>
           <div class="calc-keys">
@@ -632,6 +587,40 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
   </div>
 </section>
 
+<!-- 地图规划器 -->
+<section class="records-panel" id="mapPanel" aria-label="地图规划器">
+  <button type="button" class="records-head" id="mapHead" aria-expanded="false">
+    <span class="records-title">地图规划器</span>
+    <span class="records-arrow" aria-hidden="true">▸</span>
+  </button>
+  <div class="records-body" id="mapBody">
+    <div class="map-inner">
+      <div class="map-toolbar">
+        <!-- 主操作 -->
+        <label class="map-btn btn-primary-style" style="border-radius:4px;">
+          上传底图
+          <input type="file" class="map-upload" id="mapUploadInput" accept="image/*">
+        </label>
+        <button class="map-btn btn-primary-style" id="mapToggleDrawBtn" disabled>🖌️ 涂鸦模式</button>
+        <!-- 次要操作 -->
+        <button class="map-btn btn-normal-style" id="mapUndoBtn" disabled>↩️ 撤回</button>
+        <!-- 主操作 -->
+        <button class="map-btn btn-primary-style" id="mapAddNodeBtn" disabled>📝 添加文本框</button>
+        <!-- 危险操作 -->
+        <button class="map-btn btn-danger-style" id="mapClearBtn" disabled>🗑️ 清空画板</button>
+      </div>
+      
+      <div class="map-canvas-container" id="mapCanvasContainer">
+        <div class="map-empty-tip" id="mapEmptyTip">支持点击上传或直接 Ctrl+V 粘贴图片</div>
+        <div class="map-board" id="mapBoard">
+          <img id="mapBgImage" class="map-bg" src="" alt="background">
+          <canvas class="map-draw-canvas" id="mapDrawCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="records-panel open" id="encPanel" aria-label="不期而遇筛选记录">
   <button type="button" class="records-head" id="encHead" aria-expanded="true">
     <span class="records-title">不期而遇筛选记录</span>
@@ -643,7 +632,8 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
       <div class="enc-floors" id="encFloors" role="group" aria-label="选择层数"></div>
       <div class="enc-grid" id="encGrid"></div>
       <div class="enc-actions">
-        <button type="button" class="enc-reset" id="encResetBtn">重置勾选</button>
+        <!-- 危险操作 -->
+        <button type="button" class="enc-reset btn-danger-style" id="encResetBtn">重置勾选</button>
       </div>
     </div>
   </div>
@@ -677,8 +667,10 @@ body.loading .bar-fill { transition: width 400ms ease-out; }
     <div id="recordsList" class="records-list"></div>
     <div class="records-empty" id="recordsEmpty">暂无对局，点击下方按钮添加</div>
     <div class="records-actions">
-      <button type="button" class="records-add" id="recordsAddBtn">+ 添加对局</button>
-      <button type="button" class="records-clear" id="recordsClearBtn">清空全部对局</button>
+      <!-- 主操作 -->
+      <button type="button" class="records-add btn-primary-style" id="recordsAddBtn">+ 添加对局</button>
+      <!-- 危险操作 -->
+      <button type="button" class="records-clear btn-danger-style" id="recordsClearBtn">清空全部对局</button>
     </div>
     <div class="chart-wrap" id="chartWrap">
       <div class="chart-empty" id="chartEmpty">暂无数据，请添加对局</div>
@@ -695,9 +687,7 @@ const themeToggleBtn = document.getElementById('themeToggleBtn');
 const themeIcon = document.getElementById('themeIcon');
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 
-// 太阳图标
 const sunSvg = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
-// 月亮图标
 const moonSvg = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
 
 function applyTheme(theme) {
@@ -711,22 +701,18 @@ function applyTheme(theme) {
     themeMeta.setAttribute('content', '#0a0d0a');
   }
 }
-
-// 初始化主题
 let savedTheme = 'dark';
 try { savedTheme = localStorage.getItem('juncang_theme') || 'dark'; } catch(e){}
 applyTheme(savedTheme);
-
 themeToggleBtn.addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme');
   applyTheme(current === 'light' ? 'dark' : 'light');
 });
 
-/* ================= 简易计算器逻辑 & 历史 & 便签 ================= */
+/* ================= 简易计算器逻辑 ================= */
 const calcExprEl = document.getElementById('calcExpr');
 const calcResEl = document.getElementById('calcRes');
 const calcHistoryList = document.getElementById('calcHistoryList');
-const memoText = document.getElementById('memoText');
 let calcExpression = '';
 
 let calcHistory = [];
@@ -741,14 +727,12 @@ function loadCalcHistory() {
 }
 
 function saveCalcHistory() {
-  try {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(calcHistory));
-  } catch(e){}
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(calcHistory)); } catch(e){}
 }
 
 function addCalcHistory(expr, res) {
   calcHistory.unshift({ expr, res });
-  if (calcHistory.length > 5) calcHistory.pop();
+  if (calcHistory.length > 20) calcHistory.pop();
   saveCalcHistory();
   renderCalcHistory();
 }
@@ -761,33 +745,22 @@ function renderCalcHistory() {
     div.innerHTML = `<span class="history-expr">${item.expr}</span> <span class="history-res">= ${item.res}</span>`;
     div.addEventListener('click', () => {
       calcExpression = item.expr;
-      calcExprEl.textContent = calcExpression;
+      calcExprEl.value = calcExpression;
       calcResEl.textContent = '';
     });
     calcHistoryList.appendChild(div);
   });
 }
 
-const MEMO_KEY = 'juncang_memo_text';
-function loadMemo() {
-  try {
-    const raw = localStorage.getItem(MEMO_KEY);
-    if (raw) memoText.value = raw;
-  } catch(e){}
-}
-memoText.addEventListener('input', () => {
-  try { localStorage.setItem(MEMO_KEY, memoText.value); } catch(e){}
-});
-document.getElementById('memoClearBtn').addEventListener('click', () => {
-  if(confirm('确认清空便签内容？')) {
-    memoText.value = '';
-    try { localStorage.removeItem(MEMO_KEY); } catch(e){}
-  }
+// 增加监听器以支持在输入框内修改
+calcExprEl.addEventListener('input', function() {
+  calcExpression = this.value;
+  calcResEl.textContent = '';
 });
 
 function appendToCalculator(numStr) {
   let val = String(numStr);
-  if (val === '0') return;
+  if (val === '0' && calcExpression === '') return;
   
   if (calcExpression === '' || calcExpression === '0') {
     calcExpression = val;
@@ -803,7 +776,7 @@ function appendToCalculator(numStr) {
       }
     }
   }
-  calcExprEl.textContent = calcExpression;
+  calcExprEl.value = calcExpression;
   calcResEl.textContent = '';
 }
 
@@ -811,9 +784,9 @@ document.querySelectorAll('.calc-key').forEach(btn => {
   btn.addEventListener('click', () => {
     const val = btn.dataset.val;
     if (val === 'C') {
-      calcExpression = ''; calcExprEl.textContent = '0'; calcResEl.textContent = '';
+      calcExpression = ''; calcExprEl.value = '0'; calcResEl.textContent = '';
     } else if (val === '←') {
-      calcExpression = calcExpression.slice(0, -1); calcExprEl.textContent = calcExpression || '0'; calcResEl.textContent = '';
+      calcExpression = calcExpression.slice(0, -1); calcExprEl.value = calcExpression || '0'; calcResEl.textContent = '';
     } else if (val === '=') {
       if (!calcExpression) return;
       let jsExpr = calcExpression.replace(/×/g, '*').replace(/÷/g, '/');
@@ -825,22 +798,355 @@ document.querySelectorAll('.calc-key').forEach(btn => {
         }
         calcResEl.textContent = '= ' + result;
         addCalcHistory(calcExpression, result);
+        // 计算成功后清空输入框
+        calcExpression = '';
+        calcExprEl.value = '';
       } catch (e) { calcResEl.textContent = '语法错误'; }
     } else {
-      if (calcExpression === '' && ['+', '*', '/', ')', '%'].includes(val)) return;
-      const lastChar = calcExpression.slice(-1);
-      if (['+', '-', '×', '÷', '%'].includes(lastChar) && ['+', '×', '÷', '%'].includes(val)) {
-          calcExpression = calcExpression.slice(0, -1) + val;
+      if (calcExpression === '0' && !['.', '+', '-', '*', '/', '(', '%'].includes(val)) {
+        calcExpression = val;
+      } else if (calcExpression === '' && ['+', '*', '/', ')', '%'].includes(val)) {
+        return;
       } else {
-          calcExpression += val;
+        const lastChar = calcExpression.slice(-1);
+        if (['+', '-', '×', '÷', '%'].includes(lastChar) && ['+', '×', '÷', '%'].includes(val)) {
+            calcExpression = calcExpression.slice(0, -1) + val;
+        } else {
+            calcExpression += val;
+        }
       }
-      calcExprEl.textContent = calcExpression;
+      calcExprEl.value = calcExpression || '0';
       calcResEl.textContent = ''; 
     }
   });
 });
-/* =================================================== */
 
+/* ================= 便签/错题本切换逻辑 ================= */
+const memoTitle = document.getElementById('memoTitle');
+const memoSwitchBtn = document.getElementById('memoSwitchBtn');
+const memoText = document.getElementById('memoText');
+const memoClearBtn = document.getElementById('memoClearBtn');
+
+const MEMO_KEY = 'juncang_memo_text';
+const MISTAKE_KEY = 'juncang_mistake_text';
+let memoMode = 'memo'; // 'memo' 或 'mistake'
+
+function loadMemoContent() {
+  const key = memoMode === 'memo' ? MEMO_KEY : MISTAKE_KEY;
+  try {
+    const raw = localStorage.getItem(key);
+    memoText.value = raw || '';
+  } catch(e){}
+  memoText.placeholder = memoMode === 'memo' ? '记点什么（下一层抓什么、留多少钱等）...' : '记录一下失误、漏怪、阵亡原因...';
+}
+
+memoSwitchBtn.addEventListener('click', () => {
+  memoMode = memoMode === 'memo' ? 'mistake' : 'memo';
+  if (memoMode === 'mistake') {
+    memoTitle.textContent = '错题本';
+    memoTitle.style.color = 'var(--red-available)';
+  } else {
+    memoTitle.textContent = '简易便签';
+    memoTitle.style.color = 'var(--text-dim)';
+  }
+  loadMemoContent();
+});
+
+memoText.addEventListener('input', () => {
+  const key = memoMode === 'memo' ? MEMO_KEY : MISTAKE_KEY;
+  try { localStorage.setItem(key, memoText.value); } catch(e){}
+});
+
+memoClearBtn.addEventListener('click', () => {
+  if(confirm('确认清空当前内容？')) {
+    memoText.value = '';
+    const key = memoMode === 'memo' ? MEMO_KEY : MISTAKE_KEY;
+    try { localStorage.removeItem(key); } catch(e){}
+  }
+});
+
+loadMemoContent();
+
+/* ================= 地图规划器逻辑 ================= */
+const mapHead = document.getElementById('mapHead');
+const mapBody = document.getElementById('mapBody');
+const mapPanel = document.getElementById('mapPanel');
+const mapUploadInput = document.getElementById('mapUploadInput');
+const mapBgImage = document.getElementById('mapBgImage');
+const mapBoard = document.getElementById('mapBoard');
+const mapDrawCanvas = document.getElementById('mapDrawCanvas');
+const mapCtx = mapDrawCanvas.getContext('2d');
+const mapToggleDrawBtn = document.getElementById('mapToggleDrawBtn');
+const mapUndoBtn = document.getElementById('mapUndoBtn');
+const mapAddNodeBtn = document.getElementById('mapAddNodeBtn');
+const mapClearBtn = document.getElementById('mapClearBtn');
+const mapEmptyTip = document.getElementById('mapEmptyTip');
+
+let mapIsUploaded = false;
+let mapIsDrawMode = false;
+let mapStrokes = [];
+let mapCurrentStroke = null;
+
+// 折叠逻辑
+mapHead.addEventListener('click', () => {
+  const open = mapPanel.classList.toggle('open');
+  mapHead.setAttribute('aria-expanded', String(open));
+  mapBody.style.maxHeight = open ? (mapBody.scrollHeight + 'px') : '0px';
+});
+window.addEventListener('resize', () => {
+  if (mapPanel.classList.contains('open')) {
+    mapBody.style.maxHeight = mapBody.scrollHeight + 'px';
+  }
+});
+
+// Canvas 尺寸同步
+function resizeMapCanvas() {
+  const rect = mapBoard.getBoundingClientRect();
+  if (rect.width > 0 && rect.height > 0) {
+    mapDrawCanvas.width = rect.width;
+    mapDrawCanvas.height = rect.height;
+    redrawMapCanvas();
+  }
+}
+window.addEventListener('resize', () => {
+  if (mapIsUploaded) resizeMapCanvas();
+});
+
+// 上传图片
+function handleMapImage(src) {
+  mapBgImage.src = src;
+  mapBoard.style.display = 'block';
+  mapEmptyTip.style.display = 'none';
+  mapAddNodeBtn.disabled = false;
+  mapToggleDrawBtn.disabled = false;
+  mapClearBtn.disabled = false;
+  mapIsUploaded = true;
+  setTimeout(resizeMapCanvas, 50);
+}
+
+mapUploadInput.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => handleMapImage(ev.target.result);
+  reader.readAsDataURL(file);
+});
+
+// Ctrl+V 粘贴图片
+document.addEventListener('paste', function(e) {
+  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+  for (let index in items) {
+    const item = items[index];
+    if (item.kind === 'file' && item.type.startsWith('image/')) {
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = (ev) => handleMapImage(ev.target.result);
+      reader.readAsDataURL(blob);
+      break; 
+    }
+  }
+});
+
+// 重绘 (恢复原格式：暗金，无发光)
+function redrawMapCanvas() {
+  mapCtx.clearRect(0, 0, mapDrawCanvas.width, mapDrawCanvas.height);
+  mapCtx.strokeStyle = '#d4a017'; // 暗金
+  mapCtx.lineWidth = 3;
+  mapCtx.lineCap = 'round';
+  mapCtx.lineJoin = 'round';
+
+  mapStrokes.forEach(stroke => {
+    if (stroke.length === 0) return;
+    mapCtx.beginPath();
+    mapCtx.moveTo(stroke[0].x, stroke[0].y);
+    for (let i = 1; i < stroke.length; i++) {
+      mapCtx.lineTo(stroke[i].x, stroke[i].y);
+    }
+    mapCtx.stroke();
+  });
+}
+
+// 切换涂鸦模式
+mapToggleDrawBtn.addEventListener('click', () => {
+  mapIsDrawMode = !mapIsDrawMode;
+  if (mapIsDrawMode) {
+    mapToggleDrawBtn.classList.add('active');
+    mapToggleDrawBtn.textContent = '🖌️ 退出涂鸦';
+    mapBoard.classList.add('draw-mode');
+  } else {
+    mapToggleDrawBtn.classList.remove('active');
+    mapToggleDrawBtn.textContent = '🖌️ 涂鸦模式';
+    mapBoard.classList.remove('draw-mode');
+  }
+});
+
+// 撤回
+mapUndoBtn.addEventListener('click', () => {
+  if (mapStrokes.length > 0) {
+    mapStrokes.pop();
+    redrawMapCanvas();
+  }
+});
+
+// 清空画板
+mapClearBtn.addEventListener('click', () => {
+  if(confirm('确认清空所有文本和涂鸦？')) {
+    document.querySelectorAll('.map-text-node').forEach(el => el.remove());
+    mapStrokes = [];
+    redrawMapCanvas();
+  }
+});
+
+// 画线交互
+function getMapMouseCoords(e) {
+  const rect = mapDrawCanvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const scaleX = mapDrawCanvas.width / rect.width;
+  const scaleY = mapDrawCanvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+function startMapDraw(e) {
+  if (!mapIsDrawMode) return;
+  if (e.button !== undefined && e.button !== 0) return;
+  mapCurrentStroke = [];
+  const coords = getMapMouseCoords(e);
+  mapCurrentStroke.push(coords);
+  
+  mapCtx.strokeStyle = '#d4a017';
+  mapCtx.lineWidth = 3;
+  
+  mapCtx.beginPath();
+  mapCtx.moveTo(coords.x, coords.y);
+  mapCtx.lineTo(coords.x, coords.y);
+  mapCtx.stroke();
+}
+
+function drawMapMove(e) {
+  if (!mapCurrentStroke) return;
+  if (e.cancelable) e.preventDefault();
+  const coords = getMapMouseCoords(e);
+  mapCurrentStroke.push(coords);
+  mapCtx.lineTo(coords.x, coords.y);
+  mapCtx.stroke();
+}
+
+function endMapDraw() {
+  if (!mapCurrentStroke) return;
+  if (mapCurrentStroke.length > 0) {
+    mapStrokes.push([...mapCurrentStroke]);
+  }
+  mapCurrentStroke = null;
+}
+
+mapDrawCanvas.addEventListener('mousedown', startMapDraw);
+mapDrawCanvas.addEventListener('mousemove', drawMapMove);
+mapDrawCanvas.addEventListener('mouseup', endMapDraw);
+mapDrawCanvas.addEventListener('mouseleave', endMapDraw);
+mapDrawCanvas.addEventListener('touchstart', startMapDraw, { passive: false });
+mapDrawCanvas.addEventListener('touchmove', drawMapMove, { passive: false });
+mapDrawCanvas.addEventListener('touchend', endMapDraw);
+
+// 添加文本框
+mapAddNodeBtn.addEventListener('click', () => {
+  if (!mapIsUploaded || mapIsDrawMode) return;
+  const node = document.createElement('div');
+  node.className = 'map-text-node';
+  node.style.left = '40%';
+  node.style.top = '40%';
+  node.textContent = '双击编辑';
+  
+  const delBtn = document.createElement('div');
+  delBtn.className = 'map-del-btn';
+  delBtn.innerHTML = '×';
+  delBtn.addEventListener('click', (e) => { e.stopPropagation(); node.remove(); });
+  node.appendChild(delBtn);
+
+  makeMapDraggable(node);
+  makeMapEditable(node);
+  mapBoard.appendChild(node);
+});
+
+function makeMapDraggable(el) {
+  let isDragging = false;
+  let startX, startY, initialLeft, initialTop;
+  const getCoords = (e) => e.touches ? e.touches[0] : e;
+
+  el.addEventListener('mousedown', dragStart);
+  el.addEventListener('touchstart', dragStart, { passive: false });
+
+  function dragStart(e) {
+    if (mapIsDrawMode) return;
+    if (el.getAttribute('contenteditable') === 'true') return;
+    if (e.target.classList.contains('map-del-btn')) return;
+
+    isDragging = true;
+    el.classList.add('dragging');
+    const coords = getCoords(e);
+    startX = coords.clientX;
+    startY = coords.clientY;
+    initialLeft = parseInt(el.style.left || '0', 10);
+    initialTop = parseInt(el.style.top || '0', 10);
+
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+  }
+
+  function dragMove(e) {
+    if (!isDragging) return;
+    if (e.cancelable) e.preventDefault(); 
+    const coords = getCoords(e);
+    const dx = coords.clientX - startX;
+    const dy = coords.clientY - startY;
+
+    let newLeft = initialLeft + dx;
+    let newTop = initialTop + dy;
+    if (newLeft < 0) newLeft = 0;
+    if (newTop < 0) newTop = 0;
+    
+    el.style.left = newLeft + 'px';
+    el.style.top = newTop + 'px';
+  }
+
+  function dragEnd() {
+    isDragging = false;
+    el.classList.remove('dragging');
+    document.removeEventListener('mousemove', dragMove);
+    document.removeEventListener('mouseup', dragEnd);
+    document.removeEventListener('touchmove', dragMove);
+    document.removeEventListener('touchend', dragEnd);
+  }
+}
+
+function makeMapEditable(el) {
+  el.addEventListener('dblclick', () => {
+    if (mapIsDrawMode) return;
+    el.setAttribute('contenteditable', 'true');
+    el.focus();
+    document.execCommand('selectAll', false, null);
+
+    const stopEdit = () => {
+      el.setAttribute('contenteditable', 'false');
+      if (el.textContent.trim() === '') {
+        el.textContent = '文本';
+        const delBtn = document.createElement('div');
+        delBtn.className = 'map-del-btn';
+        delBtn.innerHTML = '×';
+        delBtn.addEventListener('click', (e) => { e.stopPropagation(); el.remove(); });
+        el.appendChild(delBtn);
+      }
+    };
+    el.addEventListener('blur', stopEdit, { once: true });
+  });
+}
+
+/* ================= 主页面业务逻辑 ================= */
 const materials = [
   { id: 'corn',  name: '回声玉米', emoji: '🌽', desc: '每次招募干员时估价 +3', recruitBonus: 3, partsBonus: 0, battleBonus: 0 },
   { id: 'heartgrass', name: '恋心草', emoji: '🔥', desc: '每次作战后估价 +6', recruitBonus: 0, partsBonus: 0, battleBonus: 6 },
@@ -1679,15 +1985,15 @@ function renderAuth() {
   if (currentUser) {
     box.innerHTML = `
       <span class="auth-user">已登录：${escapeHtml(currentUser.email || '')}</span>
-      <button type="button" class="auth-btn" id="authLogoutBtn">退出登录</button>
+      <button type="button" class="auth-btn btn-normal-style" id="authLogoutBtn">退出登录</button>
       <span class="auth-status ok" id="authStatus">已同步云端</span>`;
     document.getElementById('authLogoutBtn').addEventListener('click', authLogout);
   } else {
     box.innerHTML = `
       <input type="email" class="auth-input" id="authEmail" placeholder="邮箱" autocomplete="email">
       <input type="password" class="auth-input" id="authPass" placeholder="密码" autocomplete="current-password">
-      <button type="button" class="auth-btn" id="authLoginBtn">登录</button>
-      <button type="button" class="auth-btn" id="authRegisterBtn">注册</button>
+      <button type="button" class="auth-btn btn-primary-style" id="authLoginBtn">登录</button>
+      <button type="button" class="auth-btn btn-normal-style" id="authRegisterBtn">注册</button>
       <span class="auth-status" id="authStatus">未登录 · 数据仅存本机</span>`;
     document.getElementById('authLoginBtn').addEventListener('click', authLogin);
     document.getElementById('authRegisterBtn').addEventListener('click', authRegister);
@@ -1753,7 +2059,6 @@ function init() {
   wireCalcPanel();
   
   loadCalcHistory();
-  loadMemo();
   
   loadRecords();
   loadEndings();
